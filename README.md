@@ -38,6 +38,12 @@ bash ~/.agents/skills/gif-studio/scripts/check_setup.sh
 5. GIF 技术检查+关键帧接触表，视觉审核后记录 SHA 绑定的批准文件。
 6. 已通过 QA 的素材合成视频，支持外部配音、字幕、成片核验。
 
+## 更严格的 GPT GIF 生产
+
+现在每个镜头都必须指定 must_show / must_not_show，明确画面中必须发生什么、不能出现什么。用 build_gif_prompts.py 编译每镜独立提示词；GIF 跑题后使用 review_gif_attempt.py 登记失败并生成一次针对性修复提示词。连续两次失败就停止并修改导演方案，不再靠无限重试或矢量动画兜底。
+
+详细说明：[GIF 生成与失败处理](references/gif-generation-playbook.md)。
+
 ## 从素材到成片
 
 先保存确认后的 `project/script.json` 与完整口播，再保存 `project/storyboard.json`、`project/style-lock.json` 和 `project/director-plan.json`。每镜头保存独立的实际素材与原始生成提示词到 `project/gifs/` 和 `project/prompts/`。
@@ -46,6 +52,7 @@ bash ~/.agents/skills/gif-studio/scripts/check_setup.sh
 python3 scripts/audit_script.py --script project/script.json --voiceover project/voiceover.md --report project/script-audit.json
 python3 scripts/validate_storyboard.py --storyboard project/storyboard.json
 python3 scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json
+python3 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json
 python3 scripts/audit_script.py --script project/script.json --storyboard project/storyboard.json
 python3 scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt
 python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --report project/qa/shot-01.json --contact-sheet project/qa/shot-01-sheet.jpg

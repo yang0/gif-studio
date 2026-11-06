@@ -36,3 +36,9 @@
 ## 交付边界
 
 生产来源登记由执行者填写，不是远端服务的不可伪造签名。视觉检查四项必须经过真实审阅，不应自动写通过。FFmpeg 能证明编解码正常，不能证明知识表达正确。没有音频的输出只叫无声预览/B-roll，不叫完成的有声口播作品。
+
+## 每镜头提示词与失败重试（v1.6）
+
+导演计划必须提供 must_show（至少两条具体事件/物件）和 must_not_show（不应出现的符号）。先运行 python3 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json，生成 prompts/shot-01.txt，之后才向当前实际可用的 GPT GIF 工具提交请求。
+
+发生跑题时，必须观看 GIF、保留源文件、记录具体观察；运行 review_gif_attempt.py 生成一次 retry-2 提示词。连续两次失败需修改导演方案才能再试。禁止使用程序绘图替代 GIF。

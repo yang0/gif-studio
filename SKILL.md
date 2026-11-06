@@ -51,17 +51,17 @@ python3 <skill_dir>/scripts/audit_script.py --script project/script.json --voice
 python3 <skill_dir>/scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json
 ```
 
-默认一镜头一独立 GIF；有意复用必须明确原始镜头和叙事理由。精确字幕、数字可作为 GPT GIF 上方的辅助后期叠加，但不能用程序动画代替整个镜头。只有用户明确批准 mixed 模式时才可使用独立程序化镜头。风格完全遵循用户的 style-lock，而非默认 Vox。
+默认一镜头一独立 GIF；有意复用必须明确原始镜头和叙事理由。对每个 new_gpt_gif 镜头导演方案必须填写 must_show（至少两个具体对象或动作）与 must_not_show（明确排除不相关符号）。请阅读 references/gif-generation-playbook.md。精确字幕、数字可作为 GPT GIF 上方的辅助后期叠加，但不能用程序动画代替整个镜头。只有用户明确批准 mixed 模式时才可使用独立程序化镜头。风格完全遵循用户的 style-lock，而非默认 Vox。
 
 ## Gate 2 — 视觉设计和终帧
 
-根据 `references/prompt-templates.md` 生成每镜头静帧提示词，**必须注入所选 style-lock 的完整定义**。如果用户提交风格参考图，描述构图、材质、光照、色彩、摄影机、角色和字体约束并写入风格锁。生成 `stills/<id>.png`（仅在环境支持时）并自查；如果不支持静帧生成，不得虚报文件。
+根据 references/prompt-templates.md 和 references/gif-generation-playbook.md 生成每镜头静帧提示词，**必须注入所选 style-lock 的完整定义**。如果用户提交风格参考图，描述构图、材质、光照、色彩、摄影机、角色和字体约束并写入风格锁。生成 `stills/<id>.png`（仅在环境支持时）并自查；如果不支持静帧生成，不得虚报文件。
 
 动作应随风格变化：手绘可以逐笔出现，像素可逐格闪动，3D clay 可推挤/弹性形变，信息图可长出连接，水彩可扩散。**assemble-from-empty 只是可选模式，不是强制模式**。镜头运动可用在明确有助叙事的场合，不机械禁止所有推拉。
 
 ## Gate 3 — GIF 生成、技术 QA、视觉 QA
 
-实际生成 GIF 并保存到 `project/gifs/<id>.gif`。不同模型工具可能不支持参考图、帧数或指定时长；只使用当下可用参数，不假装生成与终帧严格一致。
+首先使用 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json 为每镜头生成不同且具体的 prompts/<id>.txt，并阅读其中 must_show / must_not_show。随后实际生成 GIF 并保存到 project/gifs/<id>.gif。不同模型工具可能不支持参考图、帧数或指定时长；只使用当下可用参数，不假装生成与终帧严格一致。
 
 **v1.5 生产来源契约**：每个独立视觉镜头必须保存实际使用的完整生成提示词到 `project/prompts/<id>.txt`。生成后，使用实际工具名、真实操作/素材引用登记（不猜测工具或版本）：
 
@@ -75,13 +75,13 @@ python3 <skill_dir>/scripts/register_asset.py --project project --storyboard pro
 python3 <skill_dir>/scripts/inspect_gif.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.json --duration 5 --contact-sheet project/qa/shot-01-sheet.jpg
 ```
 
-必须阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅时必须逐项核查语义、动作、风格、构图，然后使用 `scripts/approve_shot.py` 明确记录四项结论、真实审核人和审核依据：
+必须观看完整 GIF，并阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅时必须逐项核查语义、动作、风格、构图，然后使用 `scripts/approve_shot.py` 明确记录四项结论、真实审核人和审核依据：
 
 ```bash
 python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard project/storyboard.json --shot shot-01 --reviewer REVIEWER --notes "真实的视觉观察结果" --semantic-pass --motion-pass --style-pass --composition-pass
 ```
 
-未真正观看动画时禁止调用上述通过标记。审批绑定 GIF 源文件、实际 contact sheet、来源登记以及导演和风格版本。失败镜头只重做一次，保留旧版本，不覆盖其他已批准素材。
+未真正观看动画时禁止调用上述通过标记。审批绑定 GIF 源文件、实际 contact sheet、来源登记以及导演和风格版本。失败镜头必须保留失败原 GIF 和具体观察，执行 scripts/review_gif_attempt.py --project project --storyboard project/storyboard.json --shot <id> --category <failure_category> --observation "<具体看到的问题>" --reviewer "<真实审核者>"，使用生成的 retry-2 提示词最多重试一次。第二次仍失败则 blocked_replan，须改变该镜的导演方案；不得无限抽卡或改用矢量动画。保留旧版本，不覆盖其他已批准素材。
 
 ## Gate 4 — 音画合成与交付
 

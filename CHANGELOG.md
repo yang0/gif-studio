@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0] - 2026-11-06
+- Added shot-specific must_show and must_not_show constraints.
+- Added independent GPT GIF prompt compiler using approved narration, director plan and style lock.
+- Added concrete failed-generation log, one focused retry prompt, and blocked_replan after two failures.
+- Added CI regression coverage for off-topic generation and refusal to auto-approve failures.
+- GPT GIF remains the only default visual source; no vector fallback.
+
 ## [1.5.0] - 2026-11-06
 
 - Added director-plan validation before animation production (v1.4).
