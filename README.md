@@ -17,9 +17,30 @@
 **制作 GIF 与决定用哪一条 GIF 必须分开。** 同一个知识点可以先准备不同景别、动作、节奏的 A/B/C 候选，存入 library/candidates/；不立即进入正式视频。剪辑时逐个观看、选出最贴合旁白的素材，并登记选片理由。未选素材保留以供重新剪辑，不能偷偷用矢量动画兜底。
 
 - scripts/candidate_pool.py：管理 GIF 候选、原始提示词、来源和最终入选版本。
+- scripts/review_workspace.py：生成可浏览的原始动图画廊和选片对照。
+- scripts/render_edit_preview.py：把实际选中的 GIF 剪成未审批草稿 MP4，供导演观看。
 - 一旦重新选片，旧镜头视觉审核自动失效，必须重新执行注册和质量检查。
 - 素材池启用后，正式合成会核对入选候选与登记来源一致，防止 A 的素材冒充 B 的生成记录。
 - 详细说明：[素材池与剪辑分离](references/material-library.md)。
+
+### 可视化画廊与草稿剪辑预览
+
+在素材池登记不同 GPT GIF 候选后，先生成一个**只读本地 HTML 画廊**，展示每条实际 GIF 的动态预览、原始提示词、工具来源、尺寸、帧数、技术问题及入选状态：
+
+```bash
+python3 scripts/review_workspace.py --project project --storyboard project/storyboard.json
+# 用浏览器打开 project/library/review.html
+```
+
+观看候选后用 `candidate_pool.py select` 明确选片。确认所选素材全部来自真实 GIF，再导出一条**未审核的剪辑草稿**（不需要先虚报视觉审核）：
+
+```bash
+python3 scripts/render_edit_preview.py --project project --storyboard project/storyboard.json
+python3 scripts/edit_plan.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav
+python3 scripts/review_workspace.py --project project --storyboard project/storyboard.json --edit-plan project/edit-plan.json
+```
+
+再次打开画廊即可看到实际草稿 MP4 和可点击跳转的镜头时间线。默认位置为 `project/build/editorial-preview.mp4`，状态强制标为 `UNREVIEWED_EDITORIAL_PREVIEW`。它允许在质量审核前观看完整节奏，但**不能替代正式 GIF QA、剪辑导演签核和成片验收**。没有真实配音的草稿必须明确标注为无声预览。
 
 ## v2 剪辑导演：GIF 不等于视频
 

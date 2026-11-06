@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0-review-workspace-alpha] - 2026-11-06
+- Added a read-only, offline HTML library showing each actual candidate GIF, metadata, origins, and selected alternatives.
+- Added explicit unreviewed edit-preview MP4 render from selected GIF bytes, without any generated substitute visual.
+- Added clickable editorial timeline linked to the draft preview player.
+- Tests cover HTML escaping, missing candidate selection, tampered GIFs and actual ffmpeg preview output.
+
 ## [2.0.0-library-alpha] - 2026-11-06
 - Separated multiple genuine GPT GIF candidates from final shot selection.
 - New candidate_pool.py stores source bytes, prompt snapshots, actual generation origin and selection rationale.

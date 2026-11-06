@@ -85,13 +85,13 @@ python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard proje
 
 ## Gate 3A — 多候选素材池与选片（优先使用）
 
-阅读 references/material-library.md。**生成素材与选入时间线是两个独立的步骤**，不应生成一条 GIF 就自动把它变成正式镜头。根据口播安排视觉覆盖，允许同一分镜储备 2–3 个不同景别或动作的真实 GPT GIF 候选，并按制作预算调整数量。先用 scripts/candidate_pool.py add 将各条实际 GIF、准确提示词、真实工具调用引用保存到项目 library/；逐个观看候选并保留失败/未选素材。剪辑导演根据语义、动作、视觉一致性和前后镜头衔接明确选择，再用 candidate_pool.py select 复制到 gifs/<id>.gif。之后才执行 register_asset.py、技术 QA 和视觉审核。换素材时必须显式 --overwrite 并全部重新审核。
+阅读 references/material-library.md。**生成素材与选入时间线是两个独立的步骤**，不应生成一条 GIF 就自动把它变成正式镜头。根据口播安排视觉覆盖，允许同一分镜储备 2–3 个不同景别或动作的真实 GPT GIF 候选，并按制作预算调整数量。先用 scripts/candidate_pool.py add 将各条实际 GIF、准确提示词、真实工具调用引用保存到项目 library/；逐个观看候选并保留失败/未选素材。使用 `scripts/review_workspace.py --project project --storyboard project/storyboard.json` 生成 `project/library/review.html`，必须实际观看动图画廊中的原始候选，并对比景别、语义、动作和可剪辑长度。剪辑导演根据语义、动作、视觉一致性和前后镜头衔接明确选择，再用 candidate_pool.py select 复制到 gifs/<id>.gif。之后才执行 register_asset.py、技术 QA 和视觉审核。换素材时必须显式 --overwrite 并全部重新审核。
 
 严禁从候选中随便拿一个填时长。**多备素材的目标是拥有可剪辑性，不是获得更多相似 GIF**。一条口播语句可使用不同景别切换；有必要时重新安排分镜与导演方案，而不是固定“每句一条 GIF”。
 
 ## Gate 3B — 剪辑导演（强制，不能靠剪映凑时间）
 
-阅读 `references/editorial-director.md`。参考 Remotion 的“时间线独立于素材”和 MoneyPrinterTurbo 的“音频/素材/字幕联动”，将已通过的真实 GPT GIF 组织为一条连续的视觉叙事。
+阅读 `references/editorial-director.md`。选片后可以先运行 `scripts/render_edit_preview.py --project project --storyboard project/storyboard.json`，使用真实已选 GPT GIF 合成**未通过 QA 的导演草稿 MP4**。草稿只能用于预览和决定切镜，输出明确标为 UNREVIEWED_EDITORIAL_PREVIEW，不可当正式交付。重新运行 `review_workspace.py --edit-plan project/edit-plan.json` 可在同一 HTML 工作台看到草稿视频和可点击跳转的镜头时间线。参考 Remotion 的“时间线独立于素材”和 MoneyPrinterTurbo 的“音频/素材/字幕联动”，将已通过的真实 GPT GIF 组织为一条连续的视觉叙事。
 
 在正式合成前，先拿真实旁白音频确定总时长；如有句级时间戳，按听众实际理解的节点安排切镜。执行 `scripts/edit_plan.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav` 生成 `project/edit-plan.json` 草案。对每镜明确：开始帧、持续帧、对应口播、**为什么在这一点剪切**、GIF 原生播放时长、末帧定格比例。剪辑导演实际审过镜头组合后填写 `cut_reason`、`review_notes` 并设 `review_status=approved`。执行同脚本的 `--verify` 后才能进入正式合成。
 

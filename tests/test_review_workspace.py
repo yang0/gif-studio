@@ -76,6 +76,21 @@ class ReviewWorkspaceTests(unittest.TestCase):
         self.assertEqual("take-a",report["shot_candidates"][0]["candidate"])
         self.assertTrue((self.root/"build/editorial-preview-report.json").is_file())
 
+    def test_gallery_shows_preview_and_clickable_timeline(self):
+        select(self.root,"shot-01","take-a","Better framing and clear action")
+        build=self.root/"build"
+        build.mkdir(exist_ok=True)
+        (build/"editorial-preview.mp4").write_bytes(b"draft video marker for static HTML test")
+        plan={"fps":24,"review_status":"draft",
+              "shots":[{"shot_id":"shot-01","start_frame":12,
+                         "duration_frames":24,"cut_reason":"Explanation begins"}]}
+        e=self.root/"edit-plan.json"
+        e.write_text(json.dumps(plan),encoding="utf-8")
+        page=make_html(self.root,self.sb,e).read_text(encoding="utf-8")
+        self.assertIn('id="editorial-player"',page)
+        self.assertIn('data-start="0.500"',page)
+        self.assertIn("NOT APPROVED",page.upper())
+
     def test_preview_rejects_tampered_selection(self):
         select(self.root,"shot-01","take-a","Fits narrative motion better")
         with (self.root/"gifs/shot-01.gif").open("ab") as f:
