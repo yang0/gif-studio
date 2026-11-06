@@ -11,10 +11,6 @@ def shot_quality(project, shot_id, storyboard=None):
     visual = project/"qa"/(shot_id+".visual.json")
     if not gif.is_file():
         return "missing", "GIF missing"
-    if storyboard is not None:
-        status, message = asset_status(project, storyboard, shot_id)
-        if status != "registered":
-            return status, message
     sha = digest(gif)
     attempts = project/"qa"/(shot_id+".attempts.json")
     if attempts.is_file():
@@ -22,11 +18,15 @@ def shot_quality(project, shot_id, storyboard=None):
             history=json.loads(attempts.read_text(encoding="utf-8"))
             failures=history.get("failures", [])
             if any(x.get("gif_sha256")==sha for x in failures):
-                return "rejected", "Current GIF already failed visual inspection"
+                return "rejected", "Current GIF failed visual inspection"
             if len(failures)>=2:
-                return "blocked_replan", "Two GIF attempts failed; revise director plan"
+                return "blocked_replan", "Two visual attempts failed; revise director plan"
         except (ValueError,OSError):
             return "rejected", "Invalid failed-attempt record"
+    if storyboard is not None:
+        status, message = asset_status(project, storyboard, shot_id)
+        if status != "registered":
+            return status, message
     if not tech.is_file():
         return "generated", "Technical QA missing"
     try:
