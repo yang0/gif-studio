@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.7.0] - 2026-11-06
+- Added strict portrait 9:16 GIF format/motion verification.
+- Blocked formal visual approval and QA on landscape GIFs even when decodable.
+- Added explicit runtime prompt-delivery contract; context-inferred generation cannot be claimed as reliable per-shot prompt execution.
+- Documented current runtime generation failure, without treating it as a successful film.
+
 ## [1.6.0] - 2026-11-06
 - Added shot-specific must_show and must_not_show constraints.
 - Added independent GPT GIF prompt compiler using approved narration, director plan and style lock.

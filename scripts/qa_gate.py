@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from inspect_gif import digest
+from verify_gif_asset import validate as validate_strict_gif
 from production_contract import asset_status, load_manifest, fingerprint, load_contract
 
 def shot_quality(project, shot_id, storyboard=None):
@@ -12,6 +13,10 @@ def shot_quality(project, shot_id, storyboard=None):
     if not gif.is_file():
         return "missing", "GIF missing"
     sha = digest(gif)
+    if storyboard is not None:
+        strict=validate_strict_gif(gif, min_short_edge=80)
+        if not strict["pass"]:
+            return "rejected_technical", "Strict GIF intake: " + "; ".join(strict["issues"])
     attempts = project/"qa"/(shot_id+".attempts.json")
     if attempts.is_file():
         try:

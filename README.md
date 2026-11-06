@@ -6,6 +6,12 @@
 
 正式视频**不能用蹩脚的矢量动画、PPT 动图或本地程序化示意图替换 GPT GIF**。如果生成跑题或质量不过关，立即停止正式合成、保留失败 GIF 和 QA 记录。默认 `--asset-mode gpt-only` 在代码层拦截程序化镜头。仅当用户明确授权混合模式，才能指定 `--asset-mode mixed`。ffmpeg 仍用于转码、字幕、音频，不负责替代主要视觉素材。
 
+## 运行时工具限制与严格画幅验收
+
+**重要发现：本会话中的图像工具即使切换了种子发芽等完全不同的画面主题，仍反复返回相同的电脑/大脑/灯泡拼贴 GIF，且输出为横屏。** 这不是可发布的镜头结果。Skill 必须检查生成工具能否真正接收逐镜提示词；无法确认时标记 context_only_unverified，不宣称跑通。
+
+新增 scripts/verify_gif_asset.py：正式镜头要求实际 GIF、有效动作帧、接近原生 9:16、足够尺寸。横屏 GIF 后期加黑边不算通过。详见 references/gif-runtime-contract.md。
+
 ## 核心理念
 
 - **Narrative-first**：先写一篇连贯口播、审核承接关系，再拆分镜；镜头不能反向决定句子的组织方式。
@@ -55,6 +61,7 @@ python3 scripts/director_plan.py --director project/director-plan.json --storybo
 python3 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json
 python3 scripts/audit_script.py --script project/script.json --storyboard project/storyboard.json
 python3 scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt
+python3 scripts/verify_gif_asset.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.intake.json
 python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --report project/qa/shot-01.json --contact-sheet project/qa/shot-01-sheet.jpg
 # 真实审阅接触表与动画后才能审批（不可自动伪造通过）：
 python3 scripts/approve_shot.py --project project --storyboard project/storyboard.json --shot shot-01 --reviewer REVIEWER --notes "记录具体所见" --semantic-pass --motion-pass --style-pass --composition-pass

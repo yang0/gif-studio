@@ -11,7 +11,7 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 ## 运行前提
 
-- 首先确认当前 Codex 会话**实际拥有** GIF 生成功能，不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
+- 首先确认当前 Codex 会话**实际拥有且可控**的 GIF 生成功能。必须检查图像工具是否有能明确传递“完整逐镜 prompt”的参数。如果工具只能从历史聊天推断并且不能确认逐镜 prompt 送达，则标记 prompt_delivery=context_only_unverified；不能当作可验证的正式生产流程。不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
 - 运行 `bash <skill_dir>/scripts/check_setup.sh`，检查 Python/Pillow/ffmpeg、libx264、字幕滤镜。
 - 输入可以是主题、文章、逐字稿或用户已有音频；没有音频不得假称有自动配音。
 - 所有数字、术语、事实要核实，精确图表/公式/文字使用确定性绘制而不是让模型自由生成。
@@ -61,7 +61,7 @@ python3 <skill_dir>/scripts/director_plan.py --director project/director-plan.js
 
 ## Gate 3 — GIF 生成、技术 QA、视觉 QA
 
-首先使用 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json 为每镜头生成不同且具体的 prompts/<id>.txt，并阅读其中 must_show / must_not_show。随后实际生成 GIF 并保存到 project/gifs/<id>.gif。不同模型工具可能不支持参考图、帧数或指定时长；只使用当下可用参数，不假装生成与终帧严格一致。
+阅读 references/gif-runtime-contract.md 中的实际工具调用规则：只为 ONE 个镜头请求 ONE 个 GIF，禁止把“九宫格故事板”写进生成提示词（工具内部动画拼装网格不等于最终画面）。首先使用 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json 为每镜头生成不同且具体的 prompts/<id>.txt，并阅读其中 must_show / must_not_show。随后实际生成 GIF 并保存到 project/gifs/<id>.gif。不同模型工具可能不支持参考图、帧数或指定时长；只使用当下可用参数，不假装生成与终帧严格一致。
 
 **v1.5 生产来源契约**：每个独立视觉镜头必须保存实际使用的完整生成提示词到 `project/prompts/<id>.txt`。生成后，使用实际工具名、真实操作/素材引用登记（不猜测工具或版本）：
 
@@ -75,7 +75,7 @@ python3 <skill_dir>/scripts/register_asset.py --project project --storyboard pro
 python3 <skill_dir>/scripts/inspect_gif.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.json --duration 5 --contact-sheet project/qa/shot-01-sheet.jpg
 ```
 
-必须观看完整 GIF，并阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅时必须逐项核查语义、动作、风格、构图，然后使用 `scripts/approve_shot.py` 明确记录四项结论、真实审核人和审核依据：
+生成 GIF 后先执行 python3 <skill_dir>/scripts/verify_gif_asset.py --gif project/gifs/<id>.gif --report project/qa/<id>.intake.json，严格检查格式、动画、原生竖屏 9:16；横屏素材即使可以被 ffmpeg 填充/裁切，也不能当作合格镜头。然后必须观看完整 GIF，并阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅时必须逐项核查语义、动作、风格、构图，然后使用 `scripts/approve_shot.py` 明确记录四项结论、真实审核人和审核依据：
 
 ```bash
 python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard project/storyboard.json --shot shot-01 --reviewer REVIEWER --notes "真实的视觉观察结果" --semantic-pass --motion-pass --style-pass --composition-pass

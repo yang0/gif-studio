@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from inspect_gif import digest
+from verify_gif_asset import validate as validate_strict_gif
 from production_contract import asset_status, load_manifest, fingerprint
 
 def approve(project, shot, reviewer, notes, storyboard=None, visual_checks=None):
@@ -19,6 +20,9 @@ def approve(project, shot, reviewer, notes, storyboard=None, visual_checks=None)
     sha = digest(source)
     if not report.get("pass") or report.get("source_sha256") != sha:
         raise ValueError("Technical QA missing, failed or stale")
+    strict = validate_strict_gif(source, min_short_edge=80)
+    if not strict["pass"]:
+        raise ValueError("Strict GIF intake failed: " + "; ".join(strict["issues"]))
     if not reviewer.strip() or not notes.strip():
         raise ValueError("Named reviewer and substantive notes required")
     record = {"approved":True,"source_sha256":sha,

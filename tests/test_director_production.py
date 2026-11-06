@@ -171,6 +171,22 @@ class DirectorProductionTests(unittest.TestCase):
             self.assertTrue(any("programmatic" in x for x in production_preflight(root,board)))
             self.assertEqual([],production_preflight(root,board,gpt_only=False))
 
+    def test_landscape_gif_cannot_be_approved(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            board,_=make_project(root,1)
+            frames=[Image.new("RGB",(480,270),c) for c in ("red","green","blue","yellow")]
+            gif=root/"gifs/shot-01.gif"
+            frames[0].save(gif,format="GIF",save_all=True,
+                           append_images=frames[1:],duration=[180]*4,loop=0)
+            register(root,board,"shot-01","gpt_gif","codex-gif-tool",
+                     "artifact-landscape",root/"prompts/shot-01.txt")
+            report=inspect(gif,1.2,.6,root/"qa/shot-01-sheet.jpg")
+            (root/"qa/shot-01.json").write_text(json.dumps(report),encoding="utf-8")
+            self.assertEqual("rejected_technical",shot_quality(root,"shot-01",board)[0])
+            with self.assertRaisesRegex(ValueError,"Strict GIF"):
+                approve(root,"shot-01","reviewer","Actually reviewed frames",board,FLAGS)
+
     def test_tampering_invalidates_provenance_and_review(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)
