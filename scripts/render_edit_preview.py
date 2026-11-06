@@ -79,10 +79,11 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--project",required=True)
     p.add_argument("--storyboard",required=True)
-    p.add_argument("--out",required=True)
+    p.add_argument("--out",help="Default project/build/editorial-preview.mp4")
     p.add_argument("--audio")
     a=p.parse_args()
-    print(json.dumps(render(a.project,a.storyboard,a.out,a.audio),
+    out=a.out or str(Path(a.project)/"build"/"editorial-preview.mp4")
+    print(json.dumps(render(a.project,a.storyboard,out,a.audio),
                      ensure_ascii=False,indent=2))
 
 if __name__=="__main__":
