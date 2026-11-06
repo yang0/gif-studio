@@ -18,7 +18,7 @@ from inspect_gif import digest
 ID = re.compile(r"^[A-Za-z0-9_-]+$")
 DRIFT_LIMIT = 0.35
 
-def verify(project, sequence, audio=None, require_audio=False):
+def verify(project, sequence, audio=None, require_audio=False, storyboard=None):
     root = Path(project).resolve()
     faults = []
     if sequence.get("version") != 2:
@@ -32,6 +32,15 @@ def verify(project, sequence, audio=None, require_audio=False):
         faults.append("Canvas must use positive even width/height")
     if faults:
         return faults
+    # An edit is bound to the narration/storyboard revision it was planned for.
+    board_path = Path(storyboard) if storyboard else root/"storyboard.json"
+    if board_path.is_file():
+        board=json.loads(board_path.read_text(encoding="utf-8"))
+        if sequence.get("storyboard_sha256") != stable_digest(board):
+            faults.append("Sequence was planned from an older storyboard/narration revision")
+        if (sequence.get("fps"),sequence.get("width"),sequence.get("height")) != (
+                board.get("fps"),board.get("width"),board.get("height")):
+            faults.append("Sequence FPS/canvas no longer matches storyboard")
     catalog = read_catalog(root)
     clips = sequence.get("clips", [])
     if not isinstance(clips, list) or not clips:
@@ -221,7 +230,7 @@ def main():
     else:
         plan=json.loads(dest.read_text(encoding="utf-8"))
         if a.verify:
-            issues=verify(root,plan,a.audio)
+            issues=verify(root,plan,a.audio,storyboard=a.storyboard)
             result={"pass":not issues,"issues":issues}
         else:
             output=Path(a.out) if a.out else root/"build"/"sequence-preview.mp4"
