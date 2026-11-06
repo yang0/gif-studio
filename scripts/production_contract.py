@@ -132,10 +132,28 @@ def asset_status(project, storyboard, shot_id):
     except (FileNotFoundError, ValueError, KeyError, StopIteration, TypeError) as exc:
         return "stale", str(exc)
 
-def production_preflight(project, storyboard):
+def production_preflight(project, storyboard, gpt_only=True):
     issues, hashes = [], {}
+    if gpt_only:
+        try:
+            plan, _, _ = load_contract(project, storyboard)
+            manifest = load_manifest(project)
+            directors = {x["id"]: x for x in plan["shots"]}
+        except (FileNotFoundError, ValueError, KeyError) as exc:
+            return ["Missing GPT-only production contract: " + str(exc)]
     for shot in storyboard["shots"]:
         sid = shot["id"]
+        if gpt_only:
+            kind = manifest["assets"].get(sid, {}).get("kind")
+            policy = directors[sid].get("asset_policy")
+            if kind == "programmatic" or policy == "programmatic":
+                issues.append(f"{sid}: GPT-only mode forbids programmatic/vector substitutes")
+            elif kind == "intentional_reuse":
+                origin = directors[sid].get("reuse_source_id")
+                if manifest["assets"].get(origin, {}).get("kind") != "gpt_gif":
+                    issues.append(f"{sid}: reused source is not GPT GIF")
+            elif kind != "gpt_gif":
+                issues.append(f"{sid}: GPT-only mode requires GPT GIF source")
         status, reason = asset_status(project, storyboard, sid)
         if status != "registered":
             issues.append(f"{sid}: {status}: {reason}")

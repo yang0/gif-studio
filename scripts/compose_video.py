@@ -17,12 +17,14 @@ def run(cmd):
 
 
 def compose(project, storyboard, out, audio=None, burn=False,
-            allow_unreviewed=False, duration_mode="hold"):
+            allow_unreviewed=False, duration_mode="hold", asset_mode="gpt-only"):
     project, out = Path(project).resolve(), Path(out).resolve()
     data = json.loads(Path(storyboard).read_text(encoding="utf-8"))
     problems = validate(data)
     if problems:
         raise ValueError("Invalid storyboard: " + "; ".join(problems))
+    if asset_mode not in ("gpt-only", "mixed"):
+        raise ValueError("Unknown asset mode")
     if duration_mode not in ("hold", "loop"):
         raise ValueError("Unknown duration mode")
     shots = data["shots"]
@@ -34,7 +36,7 @@ def compose(project, storyboard, out, audio=None, burn=False,
     clips, total = [], 0.0
     # Preflight *all* inputs before generating output.
     if not allow_unreviewed:
-        issues = production_preflight(project, data)
+        issues = production_preflight(project, data, gpt_only=(asset_mode=="gpt-only"))
         if issues:
             raise RuntimeError("Production preflight blocked: " + "; ".join(issues))
     for shot in shots:
@@ -103,7 +105,7 @@ def compose(project, storyboard, out, audio=None, burn=False,
     (project/"build"/"delivery-report.json").write_text(
         json.dumps({"video": str(out), "duration_sec": actual,
                     "expected_duration_sec": total, "width": width, "height": height,
-                    "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed,
+                    "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed, "asset_mode": asset_mode,
                     "delivery_class": "unreviewed_preview" if allow_unreviewed else ("qa_reviewed_narrated" if audio else "qa_reviewed_silent_preview")},
                    ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     return out
@@ -116,12 +118,14 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--audio")
     p.add_argument("--burn-subtitles", action="store_true")
+    p.add_argument("--asset-mode", choices=("gpt-only", "mixed"), default="gpt-only",
+                   help="GPT GIF-only by default; mixed requires user permission")
     p.add_argument("--allow-unreviewed", action="store_true",
                    help="Development only: bypass required technical + visual QA")
     p.add_argument("--duration-mode", choices=("hold","loop"), default="hold")
     a = p.parse_args()
     print(compose(a.project, a.storyboard, a.out, a.audio,
-                  a.burn_subtitles, a.allow_unreviewed, a.duration_mode))
+                  a.burn_subtitles, a.allow_unreviewed, a.duration_mode, a.asset_mode))
 
 
 if __name__ == "__main__":

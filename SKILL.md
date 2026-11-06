@@ -5,6 +5,8 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 # gif-studio
 
+**强制原则：正式视频必须以实际 GPT 生成且通过审查的 GIF 为主要镜头素材；绝不以 Python 矢量图、SVG/HTML/PPT 式程序动画代替失败 GIF。失败就停止合成并报告，不擅自替换。只有用户明确批准混合模式才可例外。**
+
 你是视频导演和制作 Agent；**本项目不绑定 Vox、半调拼贴或任何单一风格**。从叙事目标决定视觉类型，再从风格库选风格。用户明确指定的视觉方向优先。目标是解释清楚、风格统一、能够可靠交付。
 
 ## 运行前提
@@ -49,7 +51,7 @@ python3 <skill_dir>/scripts/audit_script.py --script project/script.json --voice
 python3 <skill_dir>/scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json
 ```
 
-默认一镜头一独立 GIF；有意复用必须明确原始镜头和叙事理由。需要精确数字、公式时可预先声明程序动画，但不得将其冒充 GPT GIF。风格完全遵循用户的 style-lock，而非默认 Vox。
+默认一镜头一独立 GIF；有意复用必须明确原始镜头和叙事理由。精确字幕、数字可作为 GPT GIF 上方的辅助后期叠加，但不能用程序动画代替整个镜头。只有用户明确批准 mixed 模式时才可使用独立程序化镜头。风格完全遵循用户的 style-lock，而非默认 Vox。
 
 ## Gate 2 — 视觉设计和终帧
 
@@ -84,6 +86,8 @@ python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard proje
 ## Gate 4 — 音画合成与交付
 
 如果有用户提供的逐句时间戳，写入 `subtitle_cues`（镜头相对时间）并据此生成字幕。默认是一镜头一条字幕，并明确**不是语音识别对齐**。时长不足的 GIF 默认播放一次后定格末帧，不再反复跳回开头。明确的循环素材可用 `--duration-mode loop`。
+
+默认合成 `--asset-mode gpt-only`，会拒绝独立程序化镜头以及非 GPT GIF 来源的复用。`--asset-mode mixed` 只有获得用户明确批准才能使用，且仍须通过 QA。
 
 默认合成**强制 QA 门禁**：导演方案有效、素材来源登记不陈旧、不同镜头素材不重复冒充、技术 QA 与视觉审核均绑定当前文件，才可进入合成。`--allow-unreviewed` 仅限开发调试，输出必须标明 unreviewed_preview，不可作为正式成片。查看状态：`python3 <skill_dir>/scripts/project_status.py --project project --storyboard project/storyboard.json`。
 

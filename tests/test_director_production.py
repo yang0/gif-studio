@@ -111,6 +111,17 @@ class DirectorProductionTests(unittest.TestCase):
             issues=production_preflight(root,board)
             self.assertTrue(any("Duplicate GIF" in problem for problem in issues),issues)
 
+    def test_gpt_only_rejects_programmatic(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            board,plan=make_project(root,1)
+            plan["shots"][0]["asset_policy"]="programmatic"
+            plan["shots"][0]["programmatic_reason"]="vector fallback not permitted"
+            (root/"director-plan.json").write_text(json.dumps(plan,ensure_ascii=False),encoding="utf-8")
+            register(root,board,"shot-01","programmatic","python","test-output")
+            self.assertTrue(any("programmatic" in x for x in production_preflight(root,board)))
+            self.assertEqual([],production_preflight(root,board,gpt_only=False))
+
     def test_tampering_invalidates_provenance_and_review(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)
