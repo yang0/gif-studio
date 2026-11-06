@@ -54,13 +54,10 @@ def compose(project, storyboard, out, audio=None, burn=False):
         # Use a relative SRT from the project working directory to minimize escaping issues.
         # ffmpeg subtitles filter needs libass support.
         subtitled = build / "subtitled.mp4"
-        subtitle_filter = "subtitles=filename='subtitles/captions.srt'"
+        subtitle_arg = "subtitles=" + str(subtitle).replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")
         run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-             "-i", str(current), "-vf", subtitle_filter, "-c:v", "libx264",
-             "-pix_fmt", "yuv420p", "-an", str(subtitled)] if False else
-            ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
-             "-i", str(current), "-vf", "subtitles=" + str(subtitle).replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'"),
-             "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an", str(subtitled)])
+             "-i", str(current), "-vf", subtitle_arg, "-c:v", "libx264",
+             "-pix_fmt", "yuv420p", "-an", str(subtitled)])
         current = subtitled
 
     out.parent.mkdir(parents=True, exist_ok=True)
