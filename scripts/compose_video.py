@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 from gif_to_mp4 import convert
 from generate_srt import render
+from validate_storyboard import validate
 
 
 def run(cmd):
@@ -16,6 +17,9 @@ def run(cmd):
 def compose(project, storyboard, out, audio=None, burn=False):
     project, out = Path(project).resolve(), Path(out).resolve()
     data = json.loads(Path(storyboard).read_text(encoding="utf-8"))
+    problems = validate(data)
+    if problems:
+        raise ValueError("Invalid storyboard: " + "; ".join(problems))
     shots = data.get("shots", [])
     if not shots:
         raise ValueError("No storyboard shots")
