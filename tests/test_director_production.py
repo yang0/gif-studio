@@ -58,7 +58,7 @@ def make_project(root, count=2):
         colors = ("#eac250","#d75346","#3f769e","#23644d") if i==0 else (
                   "#a753bb","#556fa2","#e67c3e","#2d9147")
         make_gif(root/"gifs"/(sid+".gif"), colors)
-        (root/"prompts"/(sid+".txt"), prompt_delivery="explicit_tool_argument").write_text("actual generation instructions "+sid,
+        (root/"prompts"/(sid+".txt")).write_text("actual generation instructions "+sid,
                                                   encoding="utf-8")
     board={"project_title":"test","width":180,"height":320,"fps":24,"shots":shots}
     director={"version":1,"creative_thesis":"因果关系通过连续视觉变化表达", "shots":plans}
@@ -71,7 +71,7 @@ def register_and_review(root, board):
     for shot in board["shots"]:
         sid = shot["id"]
         register(root,board,sid,"gpt_gif","codex-gif-tool","artifact-"+sid,
-                 root/"prompts"/(sid+".txt"))
+                 root/"prompts"/(sid+".txt"), prompt_delivery="explicit_tool_argument")
         result = inspect(root/"gifs"/(sid+".gif"),1.2,.6,root/"qa"/(sid+"-sheet.jpg"))
         assert result["pass"], result
         (root/"qa"/(sid+".json")).write_text(json.dumps(result),encoding="utf-8")
@@ -232,7 +232,7 @@ class DirectorProductionTests(unittest.TestCase):
             (root/"director-plan.json").write_text(json.dumps(plan,ensure_ascii=False),
                                                     encoding="utf-8")
             register(root,board,"shot-01","gpt_gif","codex-gif-tool","artifact-01",
-                     root/"prompts/shot-01.txt")
+                     root/"prompts/shot-01.txt", prompt_delivery="explicit_tool_argument")
             register(root,board,"shot-02","intentional_reuse","file-copy",
                      "reuse-previous-approved-gif")
             self.assertEqual([],production_preflight(root,board))
