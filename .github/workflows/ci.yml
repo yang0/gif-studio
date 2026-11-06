@@ -27,5 +27,8 @@ jobs:
           python scripts/validate_storyboard.py --storyboard templates/storyboard.json
           python scripts/director_plan.py --director templates/director-plan.json --storyboard templates/storyboard.json
           python scripts/validate_storyboard.py --storyboard examples/compound-interest/storyboard.json
+          python scripts/validate_storyboard.py --storyboard examples/focus-interruption/storyboard.json
+          python scripts/audit_script.py --script examples/focus-interruption/script.json --storyboard examples/focus-interruption/storyboard.json
+          python scripts/director_plan.py --director examples/focus-interruption/director-plan.json --storyboard examples/focus-interruption/storyboard.json
       - name: Unit and pipeline tests
         run: python -m unittest discover -s tests -v

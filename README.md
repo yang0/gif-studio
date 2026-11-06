@@ -74,7 +74,7 @@ python3 scripts/compose_video.py --project project --storyboard project/storyboa
 - [多风格目录](presets/styles.json) 与 [导演指南](references/style-guide.md)
 - [提示词模板](references/prompt-templates.md)
 - [异常排查](docs/troubleshooting.md)
-- [两个示例分镜](examples/)
+- [可复现的三镜 GPT GIF 试验项目](examples/focus-interruption/) 与 [其他分镜](examples/)
 
 ## 测试
 
