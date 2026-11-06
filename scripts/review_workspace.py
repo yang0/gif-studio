@@ -27,7 +27,7 @@ def candidate_details(root, rec):
     info = validate_gif(source) if source.is_file() else {"pass": False, "issues":["No GIF"]}
     return issues, info
 
-def make_html(project, storyboard=None, edit_plan=None):
+def make_html(project, storyboard=None, edit_plan=None, sequence=None):
     root=Path(project).resolve()
     catalog=read(root)
     shots = {}
@@ -37,6 +37,9 @@ def make_html(project, storyboard=None, edit_plan=None):
     plan = None
     if edit_plan and Path(edit_plan).is_file():
         plan=json.loads(Path(edit_plan).read_text(encoding="utf-8"))
+    if sequence and Path(sequence).is_file():
+        # A version 2 multi-cut sequence takes precedence over legacy EDL.
+        plan=json.loads(Path(sequence).read_text(encoding="utf-8"))
 
     # Output lives inside library; links are relative to that directory.
     out=root/"library"/"review.html"
@@ -88,12 +91,20 @@ def make_html(project, storyboard=None, edit_plan=None):
           <div class="cards">{''.join(cards) or '<p>No candidates yet.</p>'}</div>
         </section>""")
     timeline=""
-    if (root/"build"/"editorial-preview.mp4").is_file():
-        timeline = '<section class="preview"><h2>Editorial MP4 preview · NOT approved</h2><video id="editorial-player" controls preload="metadata" style="width:100%;max-width:360px;max-height:60vh" src="../build/editorial-preview.mp4"></video></section>'
+    if sequence:
+        preview_video = root/"build"/"sequence-preview.mp4"
+        preview_href = "../build/sequence-preview.mp4"
+    else:
+        preview_video = root/"build"/"editorial-preview.mp4"
+        preview_href = "../build/editorial-preview.mp4"
+    if preview_video.is_file():
+        timeline = '<section class="preview"><h2>Editorial MP4 preview · NOT approved</h2><video id="editorial-player" controls preload="metadata" style="width:100%;max-width:360px;max-height:60vh" src="' + preview_href + '"></video></section>'
     if plan:
         parts=[]
-        for x in plan.get("shots",[]):
+        for x in (plan.get("clips",[]) if plan.get("version")==2 else plan.get("shots",[])):
             sid=x.get("shot_id","")
+            if plan.get("version")==2:
+                sid += " · " + x.get("candidate_id","")
             dur=float(x.get("duration_frames",0))/max(1,int(plan.get("fps",24)))
             parts.append(f"""<div class="segment" style="flex:{max(dur,0.2):.3f}"
               data-start="{int(x.get("start_frame",0))/max(1,int(plan.get("fps",24))):.3f}" title="{esc(sid)} — {dur:.2f}s">
@@ -153,8 +164,9 @@ def main():
     p.add_argument("--project",required=True)
     p.add_argument("--storyboard")
     p.add_argument("--edit-plan")
+    p.add_argument("--sequence",help="Version 2 multi-clip sequence.json")
     a=p.parse_args()
-    print(make_html(a.project,a.storyboard,a.edit_plan))
+    print(make_html(a.project,a.storyboard,a.edit_plan,a.sequence))
 
 if __name__=="__main__":
     main()
