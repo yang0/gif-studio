@@ -11,7 +11,7 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 ## 运行前提
 
-- 首先确认当前 Codex 会话**实际拥有且可控**的 GIF 生成功能。必须检查图像工具是否有能明确传递“完整逐镜 prompt”的参数。如果工具只能从历史聊天推断并且不能确认逐镜 prompt 送达，则标记 prompt_delivery=context_only_unverified；不能当作可验证的正式生产流程。不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
+- 首先确认当前 Codex 会话**实际拥有且可控**的 GIF 生成功能。必须检查图像工具是否有能明确传递“完整逐镜 prompt”的参数。如果工具只能从历史聊天推断并且不能确认逐镜 prompt 送达，则标记 prompt_delivery=context_only_unverified；不能当作可验证的正式生产流程。若跨主题生成结果反复出现相同图案，运行 scripts/probe_gif_prompt_control.py 比较实际 GIF 并暂停正式生产，不要盲目修改镜头文案。不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
 - 运行 `bash <skill_dir>/scripts/check_setup.sh`，检查 Python/Pillow/ffmpeg、libx264、字幕滤镜。
 - 输入可以是主题、文章、逐字稿或用户已有音频；没有音频不得假称有自动配音。
 - 所有数字、术语、事实要核实，精确图表/公式/文字使用确定性绘制而不是让模型自由生成。

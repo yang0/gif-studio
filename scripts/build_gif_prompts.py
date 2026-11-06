@@ -47,8 +47,7 @@ STYLE LOCK:
 
 Duration target: {shot["duration_sec"]} seconds, only if supported by the current tool.
 Use a readable opening, a clear visible event, and a final hold. Each object retains its identity.
-Never replace the selected style with a default paper collage, random brain/lightbulb,
-generic AI graphics, slide template, vector card montage, or stock symbolic imagery.
+Keep the specified scene and selected artistic style. No generic stock concept symbols, irrelevant objects, decorative slide layout, or unrelated montage.
 No narration text, watermark, fabricated numerical details, logo, or fake UI.
 OUTPUT: an actual animated GIF, not an image description or alternative video source.
 """
