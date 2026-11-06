@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate one subtitle cue per storyboard shot (not word-level alignment)."""
+"""SRT: storyboard-level cues or optional relative timestamped per-shot cues."""
 import argparse
 import json
 from pathlib import Path
@@ -14,27 +14,36 @@ def stamp(sec):
 
 
 def render(data):
-    lines, t = [], 0.0
-    for idx, shot in enumerate(data["shots"], 1):
+    lines, t, index = [], 0.0, 0
+    for shot in data["shots"]:
         duration = float(shot["duration_sec"])
         if duration <= 0:
             raise ValueError("duration_sec must be positive")
-        subtitle = str(shot.get("subtitle") or shot.get("narration") or "").strip()
-        if subtitle:
-            lines.extend([str(idx), f"{stamp(t)} --> {stamp(t+duration)}", subtitle, ""])
+        cues = shot.get("subtitle_cues")
+        if cues is None:
+            cues = [{"start_sec":0, "end_sec":duration,
+                     "text":shot.get("subtitle") or shot.get("narration") or ""}]
+        for cue in cues:
+            start, end = float(cue["start_sec"]), float(cue["end_sec"])
+            if not (0 <= start < end <= duration + 1e-7):
+                raise ValueError("Cue timestamps must be within shot bounds")
+            text = str(cue.get("text", "")).strip()
+            if text:
+                index += 1
+                lines.extend([str(index), f"{stamp(t+start)} --> {stamp(t+end)}", text, ""])
         t += duration
-    return "\n".join(lines) + "\n"
+    return "\n".join(lines)+"\n"
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--storyboard", required=True)
-    ap.add_argument("--output", required=True)
-    a = ap.parse_args()
-    data = json.loads(Path(a.storyboard).read_text(encoding="utf-8"))
+    p = argparse.ArgumentParser()
+    p.add_argument("--storyboard", required=True)
+    p.add_argument("--output", required=True)
+    a = p.parse_args()
     dest = Path(a.output)
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(render(data), encoding="utf-8")
+    dest.write_text(render(json.loads(Path(a.storyboard).read_text(encoding="utf-8"))),
+                    encoding="utf-8")
 
 
 if __name__ == "__main__":
