@@ -22,10 +22,10 @@ def shot_quality(project, shot_id, storyboard=None):
                 active_shot = next(x for x in director["shots"] if x["id"]==shot_id)
                 if history.get("director_fingerprint") != fingerprint(active_shot):
                     failures = []
-            if any(x.get("gif_sha256")==sha for x in failures):
-                return "rejected", "Current GIF failed visual inspection"
             if len(failures)>=2:
                 return "blocked_replan", "Two visual attempts failed; revise director plan"
+            if any(x.get("gif_sha256")==sha for x in failures):
+                return "rejected", "Current GIF failed visual inspection"
         except (ValueError,OSError):
             return "rejected", "Invalid failed-attempt record"
     if storyboard is not None:
