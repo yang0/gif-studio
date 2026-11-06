@@ -1,4 +1,4 @@
-# Knowledge GIF Studio — 项目需求
+# gif-studio — 项目需求
 
 ## 主题
 {{TITLE}}
@@ -16,7 +16,7 @@
 {{DURATION_SECONDS}} 秒 / 9:16
 
 ## 视觉风格
-默认 editorial halftone paper collage；可给参考图片或自定义设计语言。
+风格不限：极简信息图、手绘、黏土 3D、水彩、像素、电影、编辑拼贴或自定义参考图。\n优先使用用户指定风格；如未指定，请建议 2–3 种并确认。
 
 ## 声音
 - [ ] 无声 B-roll（默认）

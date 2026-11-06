@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Knowledge GIF Studio storyboard",
+  "title": "gif-studio storyboard",
   "type": "object",
   "required": [
     "project_title",
@@ -83,10 +83,38 @@
             "items": {
               "type": "string"
             }
+          },
+          "subtitle_cues": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "start_sec",
+                "end_sec",
+                "text"
+              ],
+              "properties": {
+                "start_sec": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "end_sec": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
           }
         },
         "additionalProperties": true
       }
+    },
+    "style_id": {
+      "type": "string"
     }
   },
   "additionalProperties": true

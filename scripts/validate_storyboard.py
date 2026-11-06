@@ -44,6 +44,22 @@ def validate(data):
             issues.append(f"shot {idx}: visual_goal missing")
         if shot.get("visual_mode") not in MODES:
             issues.append(f"shot {idx}: unsupported visual_mode")
+        cues = shot.get("subtitle_cues")
+        if cues is not None:
+            if not isinstance(cues, list):
+                issues.append(f"shot {idx}: subtitle_cues must be list")
+            else:
+                for j, cue in enumerate(cues, 1):
+                    if not isinstance(cue, dict):
+                        issues.append(f"shot {idx} cue {j}: must be object")
+                        continue
+                    a, b = cue.get("start_sec"), cue.get("end_sec")
+                    if any(isinstance(x, bool) or not isinstance(x, (int, float)) for x in (a,b)):
+                        issues.append(f"shot {idx} cue {j}: timestamps must be numeric")
+                    elif isinstance(duration, (int, float)) and not (0 <= a < b <= duration):
+                        issues.append(f"shot {idx} cue {j}: timestamps out of bounds")
+                    if not isinstance(cue.get("text"), str):
+                        issues.append(f"shot {idx} cue {j}: text must be string")
         if not isinstance(shot.get("motion_plan"), list) or not shot["motion_plan"]:
             issues.append(f"shot {idx}: motion_plan must be nonempty list")
     return issues
