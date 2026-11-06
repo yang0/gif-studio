@@ -1,39 +1,37 @@
-# 可复用提示词
+# gif-studio Prompt 模板（风格无关）
 
 ## 1. 分镜导演
 
-任务：将 {{SCRIPT}} 制作成 {{TARGET_DURATION}} 秒知识短视频。先判断论点是否成立，再按每镜头 3–6 秒拆分。每镜头只有一个知识目标。输出镜头 ID、原始口播、简短字幕、视觉类型、3–6 个物件、主背景色、动作顺序、时长。禁止生硬把所有概念都变成视觉隐喻；科学机制优先结构图，数据关系优先图解。未经确认不要出图。
+把 {{SCRIPT}} 变成 {{TARGET_DURATION}} 秒视频。分析受众与知识目标，按语义和实际配音时长设计镜头。为每镜头选择知识表达模式 visual_metaphor / structure_relation / mechanism_breakdown / compare_contrast / data_motion。**不要默认 Vox 或纸拼贴风格**。
 
-## 2. 统一风格基准
+## 2. 风格导演
 
-Editorial halftone paper collage. A flat solid colored uncoated paper background, black-and-white photographic halftone cutouts with visible print dots, clean mechanical paper edges, thin warm-ivory keylines, soft paper shadows and subtle fibers, restrained accent color cardstock. No gradients, no glossy 3D, no busy photorealistic environment. Clear large objects and strongly readable visual hierarchy. Vertical 9:16 composition, center-weighted main subject, clear bottom subtitle-safe area.
+User preference: {{USER_STYLE}}
+Topic and audience: {{TOPIC_AUDIENCE}}
+Available presets: presets/styles.json
+Propose 2–3 visually distinct treatments with material, light, color, composition, motion grammar and risks. Respect user-supplied reference images. Once approved, emit project/style-lock.json. Never select a style merely because it was used in a previous project.
 
-## 3. 终帧静图
+## 3. 关键静帧
 
-Create a FINAL KEYFRAME for an educational animated GIF.
+Create a final keyframe for an educational video, style defined by the FULL style lock:
+{{STYLE_LOCK}}
 Knowledge goal: {{VISUAL_GOAL}}
-Mode: {{VISUAL_MODE}}
-Main objects: {{KEY_OBJECTS}}
-Composition: {{COMPOSITION}}
-Background and accents: {{COLORS}}
-Reference style: {{STYLE_SPEC}}
-This frame must be visually complete, simple, and legible, with 3–6 separable main pieces whenever possible. Keep the camera locked and provide enough clean background for elements to later assemble from empty space.
-Do not put narration text in the frame; the video editor adds subtitles separately.
-Negative: gibberish, letters, numbers, watermark, logo, app UI, stray cutouts, tiny illegible objects, clutter, gradients, smooth 3D.
+Subject and composition: {{SUBJECT_COMPOSITION}}
+Important objects and their identities: {{OBJECTS}}
+The final state must express the point immediately. Keep a safe area for external subtitles. Do not invent text, statistics, UI or logos. If source imagery is given and supported, use it as visual reference; otherwise describe it explicitly.
 
 ## 4. GIF 动画
 
-Create an animated GIF, target {{DURATION_SEC}} seconds, vertical 9:16.
-The END STATE should visually match the supplied final-keyframe reference WHEN the tool supports an image reference. If no reference is supported, follow this complete description: {{FINAL_FRAME_DESCRIPTION}}.
-Concept: {{VISUAL_GOAL}}.
-Start on a blank solid paper background. Assemble the object groups using physical stop-motion verbs: slide, drop, snap into place, hinge, rotate, unfold, align, lock. Use this exact ordered choreography: {{MOTION_PLAN}}.
-Reserve the final portion for a clearly legible hold, then optionally cleanly return to blank for looping. All elements keep their identity and material texture across frames.
-Camera fixed; no zoom, camera movement, fades, floating drift, text, logo, watermark, new objects, morphing, or jitter.
+Generate an animated GIF, target {{DURATION_SEC}} seconds (only use supported output parameters).
+Full style definition: {{STYLE_LOCK}}
+Knowledge point: {{VISUAL_GOAL}}
+Reference final frame (if tool can accept it): {{STILL_REFERENCE}}
+Action choreography, including entry, behavior, landing, exit and final hold:
+{{MOTION_PLAN}}
+Motion grammar must reflect the selected style: hand-drawn uses drawing strokes, clay uses tactile physical animation, watercolor uses brush/pigment diffusion, cinematic uses motivated lens movement, pixel art uses discrete stepping, infographic uses diagram builds, collage uses paper layering.
+Do not automatically apply assemble-from-empty. A static hold, transformation, reveal, diagram flow or loop is acceptable when semantically justified.
+Preserve object identity, palette and design language. No unrelated text, invented numbers, logos, watermark or unexplained UI.
 
-## 5. 针对不同知识类型的动作
+## 5. 回炉修正
 
-- visual_metaphor: 基础物件 → 隐喻主角 → 行为 → 结果；物件形态不可变化。
-- structure_relation: 模块逐个进入 → 连接线形成 → 重点流向被强调。
-- mechanism_breakdown: 外部框架 → 层级拆开 → 输入输出 → 结构复位。
-- compare_contrast: 状态 A 稳定 → 状态 B 展开 → 形成两侧清楚对照。
-- data_motion: GPT 只负责抽象动势；准确比例、数值和标签由后期程序叠加，不让生成模型绘制精确数据。
+Keep EXACT style-lock and subject identities; correct only {{QA_ISSUES}}. Avoid rebuilding all approved shots. Never claim an exact end-frame match if image referencing is unsupported.

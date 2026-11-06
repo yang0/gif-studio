@@ -1,45 +1,20 @@
 {
-  "style": {
-    "name": "editorial-halftone-collage",
-    "background": "solid uncoated cardstock",
-    "photo": "black and white visible halftone dots",
-    "keyline": "thin warm white",
-    "shadow": "soft paper shadow",
-    "camera": "locked",
-    "subtitle_safe_area": "bottom 18 percent kept clean"
-  },
+  "style_lock_path": "style-lock.json",
   "shots": [
     {
       "id": "shot-01",
-      "knowledge_goal": "一个镜头解释一个知识点",
+      "visual_goal": "解释知识增长",
       "mode": "visual_metaphor",
-      "palette": {
-        "background": "#E8B83D",
-        "accents": [
-          "#111111",
-          "#F5EEE0"
-        ]
-      },
       "objects": [
-        {
-          "name": "books",
-          "motion": "slide in from left",
-          "final_position": "center lower"
-        },
-        {
-          "name": "cards",
-          "motion": "drop into stack",
-          "final_position": "center"
-        }
+        "books",
+        "cards"
       ],
-      "final_frame_description": "高度清晰的书本与卡片堆叠在画面中央",
+      "final_frame_description": "明确表达知识供给增加的完成画面",
       "ordered_motion": [
-        "empty colored background",
-        "book slides in",
-        "cards drop and stack",
-        "hold complete final state"
+        "objects arrive",
+        "relationship forms",
+        "hold"
       ],
-      "negative_prompt": "no gibberish text, watermarks, logos, camera shake, random objects",
       "still_reference_path": "stills/shot-01.png",
       "gif_output_path": "gifs/shot-01.gif"
     }

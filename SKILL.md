@@ -1,82 +1,63 @@
 ---
-name: knowledge-gif-studio
-description: 将知识口播、文章或概念拆成分镜，使用 Codex 当前可用的 GPT 图像/GIF 生成能力制作知识动画，再通过本地 ffmpeg 脚本质检和合成 MP4。触发词：knowledge gif、知识视频、知识动画、GIF 知识短视频、gif-studio。
+name: gif-studio
+description: Codex-first multi-style GIF video production skill. 将知识口播、短故事或观点分镜为多种视觉风格的 GPT GIF 动画，完成质检、字幕、音画合成与 MP4 交付。触发词：gif-studio、知识视频、GIF 视频、知识动画、制作短视频。
 ---
 
-# Knowledge GIF Studio
+# gif-studio
 
-你是知识内容导演、分镜师和 GIF 制作助手。目标是“让人看懂”，不是让每个元素都动。
+你是视频导演和制作 Agent；**本项目不绑定 Vox、半调拼贴或任何单一风格**。从叙事目标决定视觉类型，再从风格库选风格。用户明确指定的视觉方向优先。目标是解释清楚、风格统一、能够可靠交付。
 
-## 能力与真实性约束
+## 运行前提
 
-1. 首先确认当前 Codex 会话是否**实际提供**图像生成与 GIF 输出能力。不要臆造模型名称、API 调用参数或假装生成文件。没有 GIF 能力时，提供分镜与 prompt，说明阻塞原因；绝不静默替换为视频模型。
-2. 使用本 Skill 自带本地脚本检查、合成；它们不负责请求 GPT 图像服务。
-3. 未得到用户批准时，不跳过 Gate 1 的人工分镜确认。若用户明确说“全自动执行”，可视为预授权，仍需写出分镜留档。
-4. 不对未经证实的事实、精确统计数据和公式进行视觉编造；有疑问先标记需要核实。
-5. 不把 GIF 文件存在当作质量达标：技术检查由脚本完成，语义和视觉质量需逐帧审阅。
+- 首先确认当前 Codex 会话**实际拥有** GIF 生成功能，不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
+- 运行 `bash <skill_dir>/scripts/check_setup.sh`，检查 Python/Pillow/ffmpeg、libx264、字幕滤镜。
+- 输入可以是主题、文章、逐字稿或用户已有音频；没有音频不得假称有自动配音。
+- 所有数字、术语、事实要核实，精确图表/公式/文字使用确定性绘制而不是让模型自由生成。
 
-## Gate 0 环境
+## Gate 1 — 叙事、风格、分镜
 
-运行 `bash <skill_dir>/scripts/check_setup.sh`。若缺 ffmpeg、ffprobe、Python>=3.10 或 Pillow，提示修复后再进入合成；分镜设计可继续。
+先拆解知识目标和目标受众，再选叙事结构（钩子→解释→例子→总结）。按旁白句长安排镜头；优先使用用户给的时间戳。每镜头使用一个主要知识目标。导出 `storyboard.json` 并运行 `validate_storyboard.py`。
 
-## Gate 1 知识拆解（人工确认）
+**风格是显式配置而不是默认拼贴**：阅读 `references/style-guide.md` 和 `presets/styles.json`。给用户 2–3 种契合内容的可选风格，除非用户已指定；确认后固定到 `project/style-lock.json`。可用风格例如 clean infographic、hand-drawn、3D clay、watercolor、pixel art、cinematic、editorial collage；也支持自定义参考图及混合风格（需写清楚切换原因）。同一视频保持设计系统一致，镜头可在预先确认的组合规则内变化。
 
-输入：文稿、目标受众、目标时长、可选风格、可选配音。
+选择镜头表达方式：visual_metaphor、structure_relation、mechanism_breakdown、compare_contrast、data_motion。对具体数字、真实产品 UI、复杂文本，选择 deterministic_overlay（可与 GIF 背景组合）；禁止伪造界面。
 
-输出：`storyboard.json`，每镜头 3–6 秒（超出可明确标记）；字段见 `templates/storyboard.json`。保存后必须运行 `python3 <skill_dir>/scripts/validate_storyboard.py --storyboard <project>/storyboard.json`，修复所有错误后才能继续。每镜头必须明确：
-- 单一知识目标、对应口播、可供外置字幕使用的短句
-- 模式：`visual_metaphor` / `structure_relation` / `mechanism_breakdown` / `compare_contrast` / `data_motion`
-- 3–6 个关键物件（数据图允许更少）、明确动作顺序、时长和色彩
+用表格交付分镜与选定风格，等待确认。用户明确提出“全自动”则可跳过等待，但分镜和风格锁仍要落盘。
 
-用表格给用户看，等待确认；未批准的镜头不得生成。
+## Gate 2 — 视觉设计和终帧
 
-## Gate 2 视觉风格与静帧
+根据 `references/prompt-templates.md` 生成每镜头静帧提示词，**必须注入所选 style-lock 的完整定义**。如果用户提交风格参考图，描述构图、材质、光照、色彩、摄影机、角色和字体约束并写入风格锁。生成 `stills/<id>.png`（仅在环境支持时）并自查；如果不支持静帧生成，不得虚报文件。
 
-参照 `references/prompt-templates.md`，统一视觉规范：
-- 默认 editorial halftone paper collage：纯色纸面、黑白半调摄影纸片、重点卡纸色块、利落剪边、纸质肌理、低透明阴影；
-- 避免不必要文字、假字、logo、UI、散碎元素、复杂写实背景；
-- 9:16、主体中间 70%、底部留字幕区；
-- 为每个镜头生成最终静帧到 `stills/<id>.png`，静帧应是 GIF 最后定格的目标；
-- 自动审查隐喻是否直观、主体是否集中、元素是否稳定、一批是否风格统一；不达标可重试一次，仍不达标时报告。
+动作应随风格变化：手绘可以逐笔出现，像素可逐格闪动，3D clay 可推挤/弹性形变，信息图可长出连接，水彩可扩散。**assemble-from-empty 只是可选模式，不是强制模式**。镜头运动可用在明确有助叙事的场合，不机械禁止所有推拉。
 
-如果当前环境只支持直接 GIF 而不支持静帧输出，可生成静帧描述并记录此项限制，不得假报静帧文件。
+## Gate 3 — GIF 生成、技术 QA、视觉 QA
 
-## Gate 3 GIF 生成与审查
-
-使用 Codex **实际可用**的 GIF 生成工具。只有支持参考静帧时，才把 Gate 2 图像作为参考输入；否则在 prompt 中完整描述终帧，不能宣称“锁定静帧一致”。
-
-运动规则：
-- `assemble-from-empty`：从纯色空场开始，3–6 个主体按逻辑先后滑入、扣合、展开，结尾定格并可选回到空场；
-- 结构关系先节点后连接，原理先外层后机制，对比先状态再差异；
-- 镜头锁定，不缩放/晃动/漂移，不引入未规划物件，不让主体变形；
-- 清楚交代每个物件“从哪来、怎么动、停哪、何时走”；
-- 如支持设置动画参数，优先采用 9:16、约 4–6 秒；以**最终实际生成结果**为准。
-
-保存为 `gifs/<id>.gif`，每个生成文件运行：
+实际生成 GIF 并保存到 `project/gifs/<id>.gif`。不同模型工具可能不支持参考图、帧数或指定时长；只使用当下可用参数，不假装生成与终帧严格一致。
 
 ```bash
-python3 <skill_dir>/scripts/inspect_gif.py --gif <project>/gifs/<id>.gif --report <project>/qa/<id>.json --duration <duration_sec>
+python3 <skill_dir>/scripts/inspect_gif.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.json --duration 5 --contact-sheet project/qa/shot-01-sheet.jpg
 ```
 
-技术不通过时重试一次；如仅出现 warnings，应结合人工/视觉模型逐帧判断是否允许继续。批量制作遇到失败镜头只重做该镜头，不覆盖已经通过的 GIF。视觉 QA：首帧是否空场、中段是否按序构建、末帧是否可读、无文字伪影/主体闪烁、循环处是否显著跳变。只凭脚本通过不代表视觉通过。
+必须阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅后，使用 `scripts/approve_shot.py` 记录 `qa/<id>.visual.json`，将源文件 SHA256 与批准绑定。失败重生一次，保留旧版本供比较，不覆盖已批准素材。不要无凭据自动批准。
 
-## Gate 4 合成
+## Gate 4 — 音画合成与交付
 
-确保 `gifs/<id>.gif` 与 storyboard 一一对应。执行：
+如果有用户提供的逐句时间戳，写入 `subtitle_cues`（镜头相对时间）并据此生成字幕。默认是一镜头一条字幕，并明确**不是语音识别对齐**。时长不足的 GIF 默认播放一次后定格末帧，不再反复跳回开头。明确的循环素材可用 `--duration-mode loop`。
+
+默认合成**强制 QA 门禁**：`qa/<id>.json` 格式通过且 source SHA 与文件一致，并有匹配 SHA 的 `qa/<id>.visual.json` 视觉批准，才可进入合成。不得用忽略 QA 当成常规操作。
 
 ```bash
-python3 <skill_dir>/scripts/compose_video.py --project <project> --storyboard <project>/storyboard.json --out <project>/final-video.mp4 --burn-subtitles
+python3 <skill_dir>/scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final.mp4 --burn-subtitles
 ```
 
-如有用户提供的配音，追加 `--audio <path>`。不要臆造配音已存在。输出 `clips/`、`subtitles/captions.srt`、`final-video.mp4`。如字幕滤镜未启用，应告知仅生成外挂 SRT。
+如果有外部音频，添加 `--audio project/audio/voiceover.wav`。若没有 libass 字幕滤镜，可省略 `--burn-subtitles` 交付外挂 SRT。
 
-## 成片验收
+执行 ffprobe 验证编码、分辨率、fps、时间、音轨；生成项目 manifest 和 QA 报告。复杂字幕、数据标注后期叠加，避免模型画字不准。
 
-- 用 ffprobe 确认 720×1280（或用户指定）、24fps、H.264、视频时长接近分镜总和；
-- 若指定音频，确认 AAC 轨；否则无音轨；
-- 检查字幕内容与镜头是否一致，不宣称逐字同步；
-- 未生成或未验证的文件不得作为交付成果。
+## 状态和失败恢复
 
-## 目录与参考
+每条镜头独立，使用 `scripts/project_status.py --project project --storyboard project/storyboard.json` 列出 missing、generated、technical_passed、visual_approved、ready。每次生成只针对未通过的镜头；如果 GIF 内容变动，SHA 不匹配的旧 QA 自动失效。
 
-`references/prompt-templates.md` 提示词、`references/quality-checklist.md` 质量规则、`templates/storyboard.schema.json` 字段约束、`templates/visual-spec.json` 终帧视觉规格、`examples/ai-judgment/` 与 `examples/compound-interest/` 示例、`docs/troubleshooting.md` 排障、`docs/release-checklist.md` 发布清单。
+## 边界与升级
+
+本 Skill 不需要 Remotion/Gemini/Veo；如用户以后明确需要可编辑复杂时间线，可在其允许时选用额外渲染工具。当前 GIF 工具不保证逐帧一致，质量审查必须保留人工/视觉模型环节。项目模板在 `templates/`，风格配置在 `presets/`，质量检查见 `references/quality-checklist.md`。

@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "default": "auto",
+  "styles": [
+    {
+      "id": "clean-infographic",
+      "name": "极简知识信息图",
+      "best_for": [
+        "流程",
+        "概念结构",
+        "科学解释"
+      ],
+      "visual": "flat vector geometric shapes, clear negative space, restrained palette and consistent line weights",
+      "motion": "build diagrams, connect modules, expand shapes",
+      "avoid": "fake exact labels or fabricated charts"
+    },
+    {
+      "id": "hand-drawn",
+      "name": "手绘白板",
+      "best_for": [
+        "教学",
+        "原理",
+        "讲故事"
+      ],
+      "visual": "textured pencil and marker strokes, off-white sketchbook, friendly rough edges",
+      "motion": "line draw, scribble reveal, erase and redraw",
+      "avoid": "illegible handwritten labels"
+    },
+    {
+      "id": "clay-3d",
+      "name": "黏土 3D",
+      "best_for": [
+        "生活科普",
+        "趣味解释",
+        "儿童教育"
+      ],
+      "visual": "tactile matte clay models, soft studio lighting, playful sculpted objects",
+      "motion": "squash, stretch, rotate and pop with coherent physical object identity",
+      "avoid": "plastic reflections and anatomy distortion"
+    },
+    {
+      "id": "watercolor",
+      "name": "水彩绘本",
+      "best_for": [
+        "人文",
+        "历史",
+        "自然"
+      ],
+      "visual": "paper grain, translucent watercolor washes, painterly silhouettes, warm quiet composition",
+      "motion": "pigment bloom, wash spread, brush reveal",
+      "avoid": "fast distracting cuts and fake text"
+    },
+    {
+      "id": "pixel-art",
+      "name": "像素动画",
+      "best_for": [
+        "技术",
+        "游戏",
+        "数字文化"
+      ],
+      "visual": "crisp pixel edges, limited retro palette, grid-aligned sprites",
+      "motion": "sprite step motion, tile build, discrete frame transitions",
+      "avoid": "antialias blur and off-grid sprites"
+    },
+    {
+      "id": "cinematic",
+      "name": "电影质感",
+      "best_for": [
+        "人物故事",
+        "科技叙事",
+        "观点开篇"
+      ],
+      "visual": "cinematic lighting, deliberate composition, depth of field with realistic material",
+      "motion": "motivated slow dolly, focus change, object reveal",
+      "avoid": "unmotivated camera movement and identity drift"
+    },
+    {
+      "id": "editorial-collage",
+      "name": "纸质编辑拼贴（可选）",
+      "best_for": [
+        "视觉隐喻",
+        "评论",
+        "文化"
+      ],
+      "visual": "editorial paper cutout textures, optional halftone photography and layered cardstock",
+      "motion": "cutout placement, page-turn, paper reveal",
+      "avoid": "mandatory Vox-style half-tone or same solid-color background on every shot"
+    }
+  ]
+}

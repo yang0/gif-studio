@@ -1,74 +1,69 @@
-# Knowledge GIF Studio 🎞️
+# gif-studio 🎬
 
-面向 **Codex** 的知识短视频 Skill：把口播文稿拆为分镜，使用当前 Codex 环境提供的 GPT 图像/GIF 工具生成画面，然后用 ffmpeg 做 GIF 检查、镜头时长规范化、字幕和 MP4 合成。
+**基于 Codex 中实际可用的 GPT GIF 功能，制作多风格知识类与叙事类短视频。** 不绑定 Vox、半调拼贴或任何一种视觉模板。
 
-> 重要：本仓库 **不声称**能通过普通 Python 脚本免费调用 ChatGPT 的 GIF 生成额度。GIF 由 Codex 会话中实际可用的图像工具生成；没有 GIF 能力时会明确停止，不会偷偷调用第三方视频模型或伪造结果。
+## 核心理念
 
-## 安装
+- **Style-first**：内容决定视觉处理；提供 7 套可扩展风格（极简信息图 / 手绘 / 黏土 3D / 水彩 / 像素 / 电影 / 编辑拼贴），也支持用户参考图。
+- **Voice-first**：镜头时长按口播安排；字幕支持分镜级与带明确时间戳的 cue。
+- **Verified**：技术 QA、contact sheet、视觉批准、源 GIF SHA256 均绑定，未过 QA 默认禁止合成。
+- **Resumable**：每个镜头独立生产，状态脚本列出需要补做的镜头。
+- **Hybrid accuracy**：精确文字和数据后期绘制，GIF 负责创意运动。
 
-```bash
-git clone https://github.com/yang0/gif-studio.git ~/.agents/skills/knowledge-gif-studio
-python3 -m pip install -r ~/.agents/skills/knowledge-gif-studio/requirements.txt
-bash ~/.agents/skills/knowledge-gif-studio/scripts/check_setup.sh
-```
+> 本仓库脚本不会调用 OpenAI API 或任何第三方视频模型。生成 GIF 必须由实际支持 GIF 的 Codex 工具执行。无法调用时可以生成分镜与提示词，但不能冒充 GIF 已生成。
 
-依赖：Python 3.10+、ffmpeg/ffprobe；GIF 检测需要 Pillow（`python3 -m pip install -r requirements.txt`）。GIF 生成本身需要你的 Codex 会话提供图像/GIF 生成工具。
-
-在 Codex 中说：**“用 knowledge-gif-studio 把这段口播制作成 30 秒知识短视频：……”**
-
-## 工作流
-
-1. Gate 1：知识拆解和分镜（人工确认一次）。
-2. Gate 2：制定统一风格和终帧设计，生成静帧（允许自行质检重试）。
-3. Gate 3：用 GPT GIF 工具逐镜头生成并执行技术与视觉 QA。
-4. Gate 4：按 storyboard 时长规范化 GIF、生成 SRT、合成 MP4，可选配音。
-
-默认 9:16 / 720×1280 / 24fps。每镜头 3–6 秒。视频 **不自动生成旁白**；传入已有音频才添加声音。导出的 SRT 按镜头近似定时，不是逐字语音对齐。
-
-## 从零制作第一个项目
-
-1. 在 Codex 里说“使用 knowledge-gif-studio 把以下文稿拆分为 30 秒知识视频：……”并确认分镜。
-2. 将确认的分镜保存为 `project/storyboard.json`，执行 `python3 scripts/validate_storyboard.py --storyboard project/storyboard.json`。
-3. 通过 Codex 当前实际可用的图像/GIF 工具，将 GIF 分别保存到 `project/gifs/shot-01.gif` 等。**仓库内的脚本本身不能生成 GIF。**
-4. 运行质检并合成。没有旁白时交付无声 MP4 和 SRT；已有旁白音频时用 `--audio` 加入。
-
-## 示例
+## 安装（Codex）
 
 ```bash
-python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.json --duration 5
-python3 scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final-video.mp4 --burn-subtitles
-# 带旁白：
-python3 scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final-video.mp4 --audio project/audio/voiceover.wav --burn-subtitles
+git clone https://github.com/yang0/gif-studio.git ~/.agents/skills/gif-studio
+python3 -m pip install -r ~/.agents/skills/gif-studio/requirements.txt
+bash ~/.agents/skills/gif-studio/scripts/check_setup.sh
 ```
 
-参见 [SKILL.md](SKILL.md)、[提示词](references/prompt-templates.md)、[判断力示例](examples/ai-judgment/storyboard.json)、[复利示例](examples/compound-interest/storyboard.json)、[故障排查](docs/troubleshooting.md)。
+在 Codex 里说：**“使用 $gif-studio 把我的这段稿子制作成 30 秒视频。先推荐三种不同视觉风格和分镜。”**
 
-运行本地测试：
+## 流程
+
+1. 分析知识与叙事，推荐视觉风格，确认分镜和 style-lock。
+2. 生成关键静帧（工具支持时），再使用 GPT GIF 生成对应动画。
+3. GIF 技术检查+关键帧接触表，视觉审核后记录 SHA 绑定的批准文件。
+4. 已通过 QA 的素材合成视频，支持外部配音、字幕、成片核验。
+
+## 从素材到成片
+
+将确认分镜保存为 `project/storyboard.json`，GIF 保存到 `project/gifs/shot-01.gif` 等。
+
+```bash
+python3 scripts/validate_storyboard.py --storyboard project/storyboard.json
+python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --report project/qa/shot-01.json --contact-sheet project/qa/shot-01-sheet.jpg
+# 观看 contact sheet、核对知识和风格后，明确记录视觉审查结果：
+python3 scripts/approve_shot.py --project project --shot shot-01 --reviewer "Codex visual review" --notes "画面一致，内容准确"
+python3 scripts/project_status.py --project project --storyboard project/storyboard.json
+python3 scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final.mp4 --burn-subtitles
+```
+
+有真实旁白音频时，合成命令追加 `--audio project/audio/voiceover.wav`。如需严格逐字同步，须提供真实时间戳/对齐结果；一镜头一行字幕并不等于音频自动识别。
+
+默认 GIF 只播放一次；时长不足则**保持末帧**，避免重复时突然跳回首帧。确实无缝循环时可以单独使用 `--duration-mode loop`。如有 QA 问题，默认拒绝合成；`--allow-unreviewed` 仅用于开发调试并应明确向用户披露。
+
+## 参考
+
+- [主 Skill](SKILL.md)
+- [多风格目录](presets/styles.json) 与 [导演指南](references/style-guide.md)
+- [提示词模板](references/prompt-templates.md)
+- [异常排查](docs/troubleshooting.md)
+- [两个示例分镜](examples/)
+
+## 测试
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-GitHub Actions 会在推送时运行 Python 3.10–3.12 的单元测试和合成烟雾测试。该测试使用合成 GIF，不消耗 GPT 生成额度，也**不等同于**真实 GPT GIF 端到端测试。
+GitHub CI 在 Python 3.10–3.12 下运行合成素材烟雾测试；不能代替真实 Codex GIF 工具的端到端验证。
 
-## 生成文件
+## 边界
 
-```text
-project/
-├── storyboard.json
-├── stills/shot-01.png
-├── gifs/shot-01.gif
-├── qa/shot-01.json
-├── clips/shot-01.mp4
-├── subtitles/captions.srt
-└── final-video.mp4
-```
+系统不保证 GIF 生成能力已向任何特定 Codex 账号开放；不含自动语音识别/配音服务；视觉审核需实际读取接触表；准确公式和统计图需额外确定性渲染；配音长短与分镜不一致时最终按视频长度截断或填静音，须人工核对。
 
-## 已知边界
-
-- 只保证静态图片及 GIF 的文件级技术检查；GIF 的文字伪影、隐喻清晰度、视觉连续性需 Codex 逐帧复核。
-- GIF 的循环属性不是视频连续性的保证；合成默认让每个镜头恰好匹配 storyboard 时长，必要时重复/截断 GIF。
-- 精确数字/公式与多行字幕交给后期程序渲染，不让图像模型直接拼写。
-- 合成按视频长度裁剪较长的音轨或对较短音轨补静音，不保证逐字同步；请自行核对旁白长度。
-
-License: MIT.
+MIT License.

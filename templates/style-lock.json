@@ -1,0 +1,26 @@
+{
+  "style_id": "clean-infographic",
+  "reference_paths": [],
+  "palette": {
+    "background": "#F5F3EE",
+    "primary": "#202A35",
+    "accent": "#E17747"
+  },
+  "materials": "flat vector blocks with subtle paper grain",
+  "lighting": "even graphic lighting",
+  "camera": "locked unless narrative motivates a move",
+  "motion_grammar": [
+    "build",
+    "connect",
+    "reveal"
+  ],
+  "negative_constraints": [
+    "fake text",
+    "watermarks",
+    "unrelated UI"
+  ],
+  "characters": {},
+  "typography": "external program-rendered captions only",
+  "subtitle_safe_area": "bottom 18%",
+  "shot_overrides": {}
+}
