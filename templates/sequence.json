@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "fps": 24,
+  "width": 720,
+  "height": 1280,
+  "storyboard_sha256": "GENERATE_USING_SEQUENCE_CUT_INIT",
+  "total_frames": 120,
+  "status": "draft",
+  "review_notes": "",
+  "clips": [
+    {
+      "id": "cut-001",
+      "shot_id": "shot-01",
+      "candidate_id": "wide",
+      "source_sha256": "REAL_SHA256",
+      "start_frame": 0,
+      "in_frame": 0,
+      "duration_frames": 48,
+      "narration_anchor": "开头口播",
+      "cut_reason": "先建立完整空间"
+    },
+    {
+      "id": "cut-002",
+      "shot_id": "shot-01",
+      "candidate_id": "detail",
+      "source_sha256": "REAL_OTHER_SHA256",
+      "start_frame": 48,
+      "in_frame": 12,
+      "duration_frames": 72,
+      "narration_anchor": "解释到关键动作",
+      "cut_reason": "进入原因时切入特写"
+    }
+  ]
+}
