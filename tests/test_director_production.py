@@ -25,7 +25,7 @@ from qa_gate import shot_quality
 FLAGS = {"semantic":True, "motion":True, "style":True, "composition":True}
 
 def make_gif(path, colors):
-    frames = [Image.new("RGB", (90, 160), c) for c in colors]
+    frames = [Image.new("RGB", (90, 160), c) for c in (list(colors)+list(colors)[:2])]
     frames[0].save(path, save_all=True, append_images=frames[1:],
                    duration=[180]*len(frames), loop=0)
 

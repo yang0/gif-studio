@@ -21,7 +21,7 @@ def make_gif(path):
     frames = [Image.new("RGB", (90,160), color) for color in
               ("#efc350", "#3b7f9c", "#be4e47", "#2d634d")]
     frames[0].save(path, save_all=True, append_images=frames[1:],
-                   duration=[200]*4, loop=0)
+                   duration=[200]*6, loop=0)
 
 
 class PipelineTests(unittest.TestCase):
