@@ -8,6 +8,7 @@ from pathlib import Path
 from gif_to_mp4 import convert
 from generate_srt import render
 from qa_gate import shot_quality
+from production_contract import production_preflight
 from validate_storyboard import validate
 
 
@@ -32,11 +33,15 @@ def compose(project, storyboard, out, audio=None, burn=False,
         raise ValueError("H.264 yuv420p requires even dimensions")
     clips, total = [], 0.0
     # Preflight *all* inputs before generating output.
+    if not allow_unreviewed:
+        issues = production_preflight(project, data)
+        if issues:
+            raise RuntimeError("Production preflight blocked: " + "; ".join(issues))
     for shot in shots:
         source = project / "gifs" / (shot["id"] + ".gif")
         if not source.is_file():
             raise FileNotFoundError(source)
-        status, reason = shot_quality(project, shot["id"])
+        status, reason = shot_quality(project, shot["id"], data)
         if status != "ready" and not allow_unreviewed:
             raise RuntimeError(f"Shot {shot['id']} blocked ({status}): {reason}")
     for shot in shots:
@@ -98,7 +103,7 @@ def compose(project, storyboard, out, audio=None, burn=False,
     (project/"build"/"delivery-report.json").write_text(
         json.dumps({"video": str(out), "duration_sec": actual,
                     "expected_duration_sec": total, "width": width, "height": height,
-                    "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed},
+                    "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed, "delivery_class": "unreviewed_preview" if allow_unreviewed else "qa_reviewed"},
                    ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     return out
 

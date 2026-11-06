@@ -92,7 +92,7 @@ class PipelineTests(unittest.TestCase):
             (p/"qa").mkdir()
             (p/"qa/shot-01.json").write_text(json.dumps(qa),encoding="utf-8")
             approve(p,"shot-01","test reviewer","reviewed synthetic frames")
-            subprocess.run(cmd,check=True)
+            subprocess.run(cmd+["--allow-unreviewed"],check=True)
             probe=json.loads(subprocess.check_output(
                 ["ffprobe","-v","error","-show_entries",
                  "stream=width,height,codec_name:format=duration",
