@@ -139,6 +139,27 @@ def asset_status(project, storyboard, shot_id):
 
 def production_preflight(project, storyboard, gpt_only=True):
     issues, hashes = [], {}
+    # If the candidate library is in use, every selected slot must remain
+    # byte-matched to its catalog entry and its declared generation metadata.
+    library_manifest = Path(project)/"library"/"catalog.json"
+    if library_manifest.is_file():
+        from candidate_pool import read as read_candidates, selection_status
+        library = read_candidates(project)
+        records = load_manifest(project)["assets"]
+        for shot in storyboard["shots"]:
+            sid=shot["id"]
+            valid,why=selection_status(project,sid)
+            if not valid:
+                issues.append(f"{sid}: candidate selection invalid: {why}")
+                continue
+            selected = library["selections"][sid]["candidate_id"]
+            candidate = library["candidates"][sid+"/"+selected]
+            registration = records.get(sid,{})
+            if (registration.get("source_sha256")!=candidate["sha256"] or
+                registration.get("tool_identity")!=candidate["tool"] or
+                registration.get("production_reference")!=candidate["reference"] or
+                registration.get("prompt_sha256")!=candidate["prompt_sha256"]):
+                issues.append(f"{sid}: registered source/prompt/tool differs from selected candidate")
     if gpt_only:
         try:
             plan, _, _ = load_contract(project, storyboard)

@@ -83,6 +83,12 @@ python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard proje
 
 未真正观看动画时禁止调用上述通过标记。审批绑定 GIF 源文件、实际 contact sheet、来源登记以及导演和风格版本。失败镜头必须保留失败原 GIF 和具体观察，执行 scripts/review_gif_attempt.py --project project --storyboard project/storyboard.json --shot <id> --category <failure_category> --observation "<具体看到的问题>" --reviewer "<真实审核者>"，使用生成的 retry-2 提示词最多重试一次。第二次仍失败则 blocked_replan，须改变该镜的导演方案；不得无限抽卡或改用矢量动画。保留旧版本，不覆盖其他已批准素材。
 
+## Gate 3A — 多候选素材池与选片（优先使用）
+
+阅读 references/material-library.md。**生成素材与选入时间线是两个独立的步骤**，不应生成一条 GIF 就自动把它变成正式镜头。根据口播安排视觉覆盖，允许同一分镜储备 2–3 个不同景别或动作的真实 GPT GIF 候选，并按制作预算调整数量。先用 scripts/candidate_pool.py add 将各条实际 GIF、准确提示词、真实工具调用引用保存到项目 library/；逐个观看候选并保留失败/未选素材。剪辑导演根据语义、动作、视觉一致性和前后镜头衔接明确选择，再用 candidate_pool.py select 复制到 gifs/<id>.gif。之后才执行 register_asset.py、技术 QA 和视觉审核。换素材时必须显式 --overwrite 并全部重新审核。
+
+严禁从候选中随便拿一个填时长。**多备素材的目标是拥有可剪辑性，不是获得更多相似 GIF**。一条口播语句可使用不同景别切换；有必要时重新安排分镜与导演方案，而不是固定“每句一条 GIF”。
+
 ## Gate 3B — 剪辑导演（强制，不能靠剪映凑时间）
 
 阅读 `references/editorial-director.md`。参考 Remotion 的“时间线独立于素材”和 MoneyPrinterTurbo 的“音频/素材/字幕联动”，将已通过的真实 GPT GIF 组织为一条连续的视觉叙事。

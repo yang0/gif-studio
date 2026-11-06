@@ -12,6 +12,15 @@
 
 新增 scripts/verify_gif_asset.py：正式镜头要求实际 GIF、有效动作帧、接近原生 9:16、足够尺寸。横屏 GIF 后期加黑边不算通过。详见 references/gif-runtime-contract.md。
 
+## v2 制作方法：先准备素材，再剪辑选片
+
+**制作 GIF 与决定用哪一条 GIF 必须分开。** 同一个知识点可以先准备不同景别、动作、节奏的 A/B/C 候选，存入 library/candidates/；不立即进入正式视频。剪辑时逐个观看、选出最贴合旁白的素材，并登记选片理由。未选素材保留以供重新剪辑，不能偷偷用矢量动画兜底。
+
+- scripts/candidate_pool.py：管理 GIF 候选、原始提示词、来源和最终入选版本。
+- 一旦重新选片，旧镜头视觉审核自动失效，必须重新执行注册和质量检查。
+- 素材池启用后，正式合成会核对入选候选与登记来源一致，防止 A 的素材冒充 B 的生成记录。
+- 详细说明：[素材池与剪辑分离](references/material-library.md)。
+
 ## v2 剪辑导演：GIF 不等于视频
 
 受到 [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) 和 [Remotion Skills](https://github.com/remotion-dev/skills) 的启发，gif-studio 增加了**真实配音→帧级剪辑决策→整片预览→最终验收**环节。GPT GIF 仍然是唯一默认主要视觉素材，绝不以 Python 矢量动画替代。
