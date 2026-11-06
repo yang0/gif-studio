@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0-library-alpha] - 2026-11-06
+- Separated multiple genuine GPT GIF candidates from final shot selection.
+- New candidate_pool.py stores source bytes, prompt snapshots, actual generation origin and selection rationale.
+- Selecting another candidate invalidates previous visual approvals; candidate catalog links to the production manifest during formal preflight.
+- Updated SKILL.md and README to use coverage-first production and edit-later selection.
+- Added library regression tests; no generated vector fallback.
+
 ## [2.0.0-editorial-alpha] - 2026-11-06
 - Added frame-accurate edit decision list using actual GPT GIF duration and optional narration audio.
 - Formal composition requires an approved edit plan; cut reasons and visual sequence review are mandatory.
