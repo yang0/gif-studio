@@ -1,0 +1,43 @@
+[
+  {
+    "id": "gate1-needs-approval",
+    "prompt": "帮我把这段口播做成知识视频：AI让知识更便宜。",
+    "expect": [
+      "先给出分镜提案",
+      "未确认不直接生成GIF"
+    ]
+  },
+  {
+    "id": "missing-gif-capability",
+    "prompt": "当前环境没有GIF生成工具，继续生成知识视频。",
+    "expect": [
+      "明确提示不支持GIF",
+      "不编造图像工具返回",
+      "只产出prompts"
+    ]
+  },
+  {
+    "id": "accurate-data",
+    "prompt": "把一组百分比画成准确的数据图，所有数字必须准确。",
+    "expect": [
+      "精确数字交给程序渲染",
+      "GIF只负责视觉动势"
+    ]
+  },
+  {
+    "id": "voiceover-not-provided",
+    "prompt": "没有旁白文件，制作有声视频。",
+    "expect": [
+      "不得声称已制作真实旁白",
+      "可交付无声视频与SRT"
+    ]
+  },
+  {
+    "id": "resume-failed-shot",
+    "prompt": "第3镜头GIF不合格，其余镜头合格。",
+    "expect": [
+      "只重生第3镜头",
+      "不覆盖其余镜头"
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install requirements
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install -r requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q scripts tests
+      - name: Validate storyboards
+        run: |
+          python scripts/validate_storyboard.py --storyboard templates/storyboard.json
+          python scripts/validate_storyboard.py --storyboard examples/compound-interest/storyboard.json
+      - name: Unit and pipeline tests
+        run: python -m unittest discover -s tests -v

@@ -1,0 +1,106 @@
+{
+  "project_title": "复利为什么在后期增长更快",
+  "width": 720,
+  "height": 1280,
+  "fps": 24,
+  "shots": [
+    {
+      "id": "shot-01",
+      "duration_sec": 5,
+      "narration": "复利最初看起来很慢。",
+      "subtitle": "复利的前期增长并不起眼",
+      "visual_goal": "解释初始增长的视觉幅度小",
+      "visual_mode": "visual_metaphor",
+      "background": "#F0BC45",
+      "accent_colors": [
+        "#1A1A1A",
+        "#FFF2D8"
+      ],
+      "key_objects": [
+        "small paper stack",
+        "single new card"
+      ],
+      "motion_plan": [
+        "blank yellow paper",
+        "small card arrives",
+        "second card joins",
+        "hold"
+      ]
+    },
+    {
+      "id": "shot-02",
+      "duration_sec": 5,
+      "narration": "因为每次赚到的收益，还会继续参与下一轮增长。",
+      "subtitle": "收益也开始产生收益",
+      "visual_goal": "解释复利机制是收益计入下一期本金",
+      "visual_mode": "mechanism_breakdown",
+      "background": "#245F57",
+      "accent_colors": [
+        "#F7F1DD",
+        "#E89B4D"
+      ],
+      "key_objects": [
+        "base cards",
+        "new cards",
+        "stack"
+      ],
+      "motion_plan": [
+        "blank teal paper",
+        "base cards slide in",
+        "new card attached to existing stack",
+        "entire stack becomes new base",
+        "hold"
+      ]
+    },
+    {
+      "id": "shot-03",
+      "duration_sec": 5,
+      "narration": "随着基数增大，绝对增量也会随之扩大。",
+      "subtitle": "相同增长率，带来更大增量",
+      "visual_goal": "说明相同百分比对应逐渐增加的绝对量",
+      "visual_mode": "compare_contrast",
+      "background": "#4D3B75",
+      "accent_colors": [
+        "#F5EDD9",
+        "#EAAA49"
+      ],
+      "key_objects": [
+        "short stack",
+        "tall stack",
+        "paper brackets"
+      ],
+      "motion_plan": [
+        "blank purple paper",
+        "short stack enters",
+        "tall stack enters",
+        "difference emphasized with paper bracket",
+        "hold"
+      ]
+    },
+    {
+      "id": "shot-04",
+      "duration_sec": 5,
+      "narration": "但这是数学规律，不代表现实投资收益一定稳定。",
+      "subtitle": "数学模型 ≠ 固定投资回报",
+      "visual_goal": "区分确定性数学模型与有风险的现实投资",
+      "visual_mode": "structure_relation",
+      "background": "#D65B3D",
+      "accent_colors": [
+        "#F8EFD9",
+        "#1B1B1B"
+      ],
+      "key_objects": [
+        "stable paper curve",
+        "uneven paper line",
+        "split divider"
+      ],
+      "motion_plan": [
+        "blank terracotta paper",
+        "stable curve card enters left",
+        "uneven line card enters right",
+        "divider snaps in",
+        "hold"
+      ]
+    }
+  ]
+}
