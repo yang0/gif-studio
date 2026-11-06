@@ -7,6 +7,7 @@ from datetime import datetime,timezone
 from pathlib import Path
 from build_gif_prompts import build_prompt
 from inspect_gif import digest
+from production_contract import fingerprint
 
 CATEGORIES=("wrong_subject","wrong_action","generic_symbols","style_drift",
             "object_morphing","text_artifacts","composition","other")
@@ -31,6 +32,16 @@ def reject(project,shot_id,category,observation,reviewer,storyboard):
     log={"shot_id":shot_id,"failures":[]}
     if log_path.exists():
         log=json.loads(log_path.read_text(encoding="utf-8"))
+    current_director_fingerprint = fingerprint(decision)
+    if log.get("director_fingerprint") != current_director_fingerprint:
+        previous = log.get("failures", [])
+        archive = log.get("archived_cycles", [])
+        if previous:
+            archive.append({"director_fingerprint":log.get("director_fingerprint"),
+                            "failures":previous})
+        log = {"shot_id":shot_id, "failures":[],
+               "director_fingerprint":current_director_fingerprint,
+               "archived_cycles":archive}
     failures=log["failures"]
     if len(failures)>=2:
         raise ValueError("Two failed attempts; first revise the director plan")
