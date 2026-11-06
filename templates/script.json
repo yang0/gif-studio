@@ -1,0 +1,60 @@
+{
+  "title": "AI时代的判断力",
+  "audience": "普通观众",
+  "central_question": "答案越来越容易得到，为什么判断仍然困难？",
+  "thesis": "获取信息和判断信息是否适用是不同能力",
+  "structure": "explanation",
+  "target_duration_sec": 45,
+  "voice": "自然、平实、举具体例子",
+  "claims_to_verify": [],
+  "paragraphs": [
+    {
+      "id": "p1",
+      "role": "setup",
+      "handoff": "建立过去的常见认知",
+      "listener_question": "现在还有必要知道那么多吗？",
+      "text": "以前，我们常觉得一个人厉害，是因为他知道得多。",
+      "verified": true
+    },
+    {
+      "id": "p2",
+      "role": "change",
+      "handoff": "对比AI改变了获取知识的方式",
+      "listener_question": "得到答案就够了吗？",
+      "text": "但 AI 正在改变这件事。过去要查半天的问题，现在往往几秒钟就能得到一个答案。",
+      "verified": true
+    },
+    {
+      "id": "p3",
+      "role": "tension",
+      "handoff": "引出信息丰富却更难决定的矛盾",
+      "listener_question": "答案与决定的差别在哪里？",
+      "text": "可当答案越来越容易得到时，新的难题出现了：这么多看似合理的答案，到底哪个适合眼前的情况？",
+      "verified": true
+    },
+    {
+      "id": "p4",
+      "role": "explanation",
+      "handoff": "回答此前提出的矛盾",
+      "listener_question": "能不能给个例子？",
+      "text": "因为拿到一个答案，和判断它是否靠谱、是否适用，本来就是两件事。",
+      "verified": true
+    },
+    {
+      "id": "p5",
+      "role": "example",
+      "handoff": "以方案选择实例说明判断",
+      "listener_question": "那么该记住什么？",
+      "text": "比如 AI 给你三个解决方案，真正费脑子的不是把它们读完，而是知道各自有什么代价，再选一个符合你目标的。",
+      "verified": true
+    },
+    {
+      "id": "p6",
+      "role": "payoff",
+      "handoff": "回答首段隐含的能力衡量问题",
+      "listener_question": "已回答",
+      "text": "所以 AI 让知识更容易获取，但它并没有替我们承担判断的责任。",
+      "verified": true
+    }
+  ]
+}

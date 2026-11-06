@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0] - 2026-11-06
+- Narrative-first script drafting and review precede all storyboards.
+- Added separate spoken-voice profiles, complete script structure and narration export.
+- Added structural audit and verbatim script-to-storyboard consistency verification.
+- Removed the assumption that a 3–6 second shot should dictate prose structure.
+
 ## [1.2.0] - 2026-11-06
 
 ### Changed

@@ -4,7 +4,7 @@
 
 ## 核心理念
 
-- **Style-first**：内容决定视觉处理；提供 7 套可扩展风格（极简信息图 / 手绘 / 黏土 3D / 水彩 / 像素 / 电影 / 编辑拼贴），也支持用户参考图。
+- **Narrative-first**：先写一篇连贯口播、审核承接关系，再拆分镜；镜头不能反向决定句子的组织方式。\n- **Style-first**：内容决定视觉处理；提供 7 套可扩展风格（极简信息图 / 手绘 / 黏土 3D / 水彩 / 像素 / 电影 / 编辑拼贴），也支持用户参考图。
 - **Voice-first**：镜头时长按口播安排；字幕支持分镜级与带明确时间戳的 cue。
 - **Verified**：技术 QA、contact sheet、视觉批准、源 GIF SHA256 均绑定，未过 QA 默认禁止合成。
 - **Resumable**：每个镜头独立生产，状态脚本列出需要补做的镜头。
@@ -24,17 +24,17 @@ bash ~/.agents/skills/gif-studio/scripts/check_setup.sh
 
 ## 流程
 
-1. 分析知识与叙事，推荐视觉风格，确认分镜和 style-lock。
-2. 生成关键静帧（工具支持时），再使用 GPT GIF 生成对应动画。
-3. GIF 技术检查+关键帧接触表，视觉审核后记录 SHA 绑定的批准文件。
-4. 已通过 QA 的素材合成视频，支持外部配音、字幕、成片核验。
+1. 先写完整口播、审查叙事逻辑与自然口语，用户确认后锁定 script.json / voiceover.md。\n2. 再推荐视觉风格与分镜，将镜头口播与完整原稿逐字核对。
+3. 生成关键静帧（工具支持时），再使用 GPT GIF 生成对应动画。
+4. GIF 技术检查+关键帧接触表，视觉审核后记录 SHA 绑定的批准文件。
+5. 已通过 QA 的素材合成视频，支持外部配音、字幕、成片核验。
 
 ## 从素材到成片
 
 将确认分镜保存为 `project/storyboard.json`，GIF 保存到 `project/gifs/shot-01.gif` 等。
 
 ```bash
-python3 scripts/validate_storyboard.py --storyboard project/storyboard.json
+python3 scripts/audit_script.py --script project/script.json --voiceover project/voiceover.md --report project/script-audit.json\npython3 scripts/validate_storyboard.py --storyboard project/storyboard.json\npython3 scripts/audit_script.py --script project/script.json --storyboard project/storyboard.json
 python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --report project/qa/shot-01.json --contact-sheet project/qa/shot-01-sheet.jpg
 # 观看 contact sheet、核对知识和风格后，明确记录视觉审查结果：
 python3 scripts/approve_shot.py --project project --shot shot-01 --reviewer "Codex visual review" --notes "画面一致，内容准确"
@@ -48,7 +48,7 @@ python3 scripts/compose_video.py --project project --storyboard project/storyboa
 
 ## 参考
 
-- [主 Skill](SKILL.md)
+- [主 Skill](SKILL.md)\n- [连贯口播写作规范](references/narrative-writing.md) 与 [口播声线](references/voice-profiles.md)
 - [多风格目录](presets/styles.json) 与 [导演指南](references/style-guide.md)
 - [提示词模板](references/prompt-templates.md)
 - [异常排查](docs/troubleshooting.md)

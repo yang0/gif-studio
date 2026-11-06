@@ -14,9 +14,20 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 - 输入可以是主题、文章、逐字稿或用户已有音频；没有音频不得假称有自动配音。
 - 所有数字、术语、事实要核实，精确图表/公式/文字使用确定性绘制而不是让模型自由生成。
 
-## Gate 1 — 叙事、风格、分镜
+## Gate 1A — 完整口播编写与连贯性审核（先于分镜）
 
-先拆解知识目标和目标受众，再选叙事结构（钩子→解释→例子→总结）。按旁白句长安排镜头；优先使用用户给的时间戳。每镜头使用一个主要知识目标。导出 `storyboard.json` 并运行 `validate_storyboard.py`。
+阅读 references/narrative-writing.md 和 references/voice-profiles.md。先围绕唯一主问题写出**一整篇能自然朗读的口播**，不是按 3–6 秒拆成散句。要明确起点、矛盾、解释、例子、结论的因果承接；逐段从听众角度审查“为什么下一段必须接着上一段讲”。检查术语铺垫、重复、开头承诺兑现、事实可信度和口语自然性。**不能只靠添加首先其次等连接词假装连贯。**
+
+保存 project/script.json（参照 templates/script.json），每段有正文 text、role、handoff、listener_question 等；程序使用 scripts/audit_script.py 验证结构并导出 project/voiceover.md。模型必须单独做语义审稿并写 project/script-review.md，审核未通过须整体修改衔接。展示**完整口播**给用户确认；用户已有最终逐字稿时保留，不得擅自改写。
+
+执行：
+```bash
+python3 <skill_dir>/scripts/audit_script.py --script project/script.json --voiceover project/voiceover.md --report project/script-audit.json
+```
+
+## Gate 1B — 风格与分镜（口播确认后）
+
+以**已经确认的全文口播**为主轴再拆镜头。每个镜头是视觉单元，不是强制的文字段落；镜头可跨句，但必须能将分镜 narration 按顺序拼回原文。优先使用用户给的真实时间戳。导出 storyboard.json 后运行 validate_storyboard.py 和 audit_script.py --script project/script.json --storyboard project/storyboard.json。不要为了镜头时长改动已确认正文。
 
 **风格是显式配置而不是默认拼贴**：阅读 `references/style-guide.md` 和 `presets/styles.json`。给用户 2–3 种契合内容的可选风格，除非用户已指定；确认后固定到 `project/style-lock.json`。可用风格例如 clean infographic、hand-drawn、3D clay、watercolor、pixel art、cinematic、editorial collage；也支持自定义参考图及混合风格（需写清楚切换原因）。同一视频保持设计系统一致，镜头可在预先确认的组合规则内变化。
 
@@ -60,4 +71,4 @@ python3 <skill_dir>/scripts/compose_video.py --project project --storyboard proj
 
 ## 边界与升级
 
-本 Skill 不需要 Remotion/Gemini/Veo；如用户以后明确需要可编辑复杂时间线，可在其允许时选用额外渲染工具。当前 GIF 工具不保证逐帧一致，质量审查必须保留人工/视觉模型环节。项目模板在 `templates/`，风格配置在 `presets/`，质量检查见 `references/quality-checklist.md`。
+口播文字声线与画面风格两套独立约束。未确认完整口播，禁止开始生成镜头 GIF。\n\n本 Skill 不需要 Remotion/Gemini/Veo；如用户以后明确需要可编辑复杂时间线，可在其允许时选用额外渲染工具。当前 GIF 工具不保证逐帧一致，质量审查必须保留人工/视觉模型环节。项目模板在 `templates/`，风格配置在 `presets/`，质量检查见 `references/quality-checklist.md`。
