@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "creative_thesis": "知识获取从便利的答案走向选择的责任，用两段有关联的视觉变化解释为什么判断不可替代。",
+  "shots": [
+    {
+      "id": "shot-01",
+      "spoken_point": "AI时代知识获取更容易",
+      "source_anchor": "AI 时代",
+      "visual_proof": "书和资料从分散逐渐变为一组可查阅的答案选择",
+      "start_state": "一个问题出现在空白场景",
+      "change_event": "几张代表信息来源的卡片先后出现并形成可比较的答案，观众能看出答案获取变得方便",
+      "end_state": "几张不同答案同时留在视觉中心",
+      "composition": "中近景主体占画面大半，信息环绕中心",
+      "entry_transition": "以提出问题的视觉事件开场",
+      "exit_transition": "保留选项形状交给下一镜",
+      "asset_policy": "new_gpt_gif"
+    },
+    {
+      "id": "shot-02",
+      "spoken_point": "判断方案是否适合当前情境",
+      "source_anchor": "但真正稀缺",
+      "visual_proof": "不同条件进入后，多个原本平行的方案有不同适用结果",
+      "start_state": "上一镜的几个答案选项在画面中",
+      "change_event": "现实限制从画面侧面进入，三个选项对条件的反应不同，最后只留一个符合条件的答案",
+      "end_state": "一个有明确选择依据的方案被保留",
+      "composition": "左右对比镜头，动态限制条件进入并改变选择",
+      "entry_transition": "从上一镜的选项直接衔接",
+      "exit_transition": "在最终选择上定格",
+      "asset_policy": "new_gpt_gif"
+    }
+  ]
+}
