@@ -10,6 +10,7 @@ from generate_srt import render
 from qa_gate import shot_quality
 from production_contract import production_preflight
 from validate_storyboard import validate
+from edit_plan import validate_plan
 
 
 def run(cmd):
@@ -17,7 +18,8 @@ def run(cmd):
 
 
 def compose(project, storyboard, out, audio=None, burn=False,
-            allow_unreviewed=False, duration_mode="hold", asset_mode="gpt-only"):
+            allow_unreviewed=False, duration_mode="hold", asset_mode="gpt-only",
+            edit_plan=None, allow_silent_preview=False):
     project, out = Path(project).resolve(), Path(out).resolve()
     data = json.loads(Path(storyboard).read_text(encoding="utf-8"))
     problems = validate(data)
@@ -34,6 +36,20 @@ def compose(project, storyboard, out, audio=None, burn=False,
     if width % 2 or height % 2:
         raise ValueError("H.264 yuv420p requires even dimensions")
     clips, total = [], 0.0
+    # An officially reviewed edit must be based on actual GIF durations and
+    # a cut-by-cut approved decision list. Silent-only projects are previews.
+    if not allow_unreviewed:
+        decision_path = Path(edit_plan) if edit_plan else project/"edit-plan.json"
+        if not decision_path.is_file():
+            raise RuntimeError("Missing approved edit-plan.json. Run scripts/edit_plan.py first")
+        plan = json.loads(decision_path.read_text(encoding="utf-8"))
+        editorial_errors=validate_plan(project,data,plan,audio,
+                                       require_review=True,
+                                       require_audio=not allow_silent_preview)
+        if editorial_errors:
+            raise RuntimeError("Editorial preflight blocked: "+"; ".join(editorial_errors))
+    if not audio and not allow_silent_preview and not allow_unreviewed:
+        raise RuntimeError("Narrated final cannot be silent; pass actual --audio or --allow-silent-preview")
     # Preflight *all* inputs before generating output.
     if not allow_unreviewed:
         issues = production_preflight(project, data, gpt_only=(asset_mode=="gpt-only"))
@@ -106,7 +122,9 @@ def compose(project, storyboard, out, audio=None, burn=False,
         json.dumps({"video": str(out), "duration_sec": actual,
                     "expected_duration_sec": total, "width": width, "height": height,
                     "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed, "asset_mode": asset_mode,
-                    "delivery_class": "unreviewed_preview" if allow_unreviewed else ("qa_reviewed_narrated" if audio else "qa_reviewed_silent_preview")},
+                    "delivery_class": "unreviewed_preview" if allow_unreviewed else ("qa_reviewed_narrated" if audio else "qa_reviewed_silent_preview"),
+                    "editorial_plan_checked":not allow_unreviewed,
+                    "has_narration":bool(audio)},
                    ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     return out
 
@@ -117,6 +135,9 @@ def main():
     p.add_argument("--storyboard", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--audio")
+    p.add_argument("--edit-plan", help="Approved edit-plan.json; default project/edit-plan.json")
+    p.add_argument("--allow-silent-preview", action="store_true",
+                   help="Export an explicitly labeled silent preview (not a finished narration video)")
     p.add_argument("--burn-subtitles", action="store_true")
     p.add_argument("--asset-mode", choices=("gpt-only", "mixed"), default="gpt-only",
                    help="GPT GIF-only by default; mixed requires user permission")
@@ -125,7 +146,8 @@ def main():
     p.add_argument("--duration-mode", choices=("hold","loop"), default="hold")
     a = p.parse_args()
     print(compose(a.project, a.storyboard, a.out, a.audio,
-                  a.burn_subtitles, a.allow_unreviewed, a.duration_mode, a.asset_mode))
+                  a.burn_subtitles, a.allow_unreviewed, a.duration_mode, a.asset_mode,
+                  a.edit_plan, a.allow_silent_preview))
 
 
 if __name__ == "__main__":

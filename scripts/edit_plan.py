@@ -83,7 +83,7 @@ def create_plan(project, board, audio=None, max_freeze_ratio=MAX_FREEZE_RATIO):
         "review_notes":"",
     }
 
-def validate_plan(project, board, plan, audio=None, require_review=True):
+def validate_plan(project, board, plan, audio=None, require_review=True, require_audio=True):
     issues=[]
     if plan.get("version")!=1 or plan.get("fps")!=board.get("fps"):
         issues.append("Edit plan version/fps mismatch")
@@ -128,7 +128,7 @@ def validate_plan(project, board, plan, audio=None, require_review=True):
             issues.append(f"Voiceover duration {actual:.2f}s differs from edit {expected_start/fps:.2f}s")
         if not plan.get("audio_file") or Path(plan["audio_file"]).resolve()!=Path(audio).resolve():
             issues.append("Edit plan bound to different narration audio file")
-    elif require_review:
+    elif require_review and require_audio:
         issues.append("Narrated final video requires actual voiceover audio")
     return issues
 

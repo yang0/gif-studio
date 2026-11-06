@@ -83,19 +83,27 @@ python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard proje
 
 未真正观看动画时禁止调用上述通过标记。审批绑定 GIF 源文件、实际 contact sheet、来源登记以及导演和风格版本。失败镜头必须保留失败原 GIF 和具体观察，执行 scripts/review_gif_attempt.py --project project --storyboard project/storyboard.json --shot <id> --category <failure_category> --observation "<具体看到的问题>" --reviewer "<真实审核者>"，使用生成的 retry-2 提示词最多重试一次。第二次仍失败则 blocked_replan，须改变该镜的导演方案；不得无限抽卡或改用矢量动画。保留旧版本，不覆盖其他已批准素材。
 
+## Gate 3B — 剪辑导演（强制，不能靠剪映凑时间）
+
+阅读 `references/editorial-director.md`。参考 Remotion 的“时间线独立于素材”和 MoneyPrinterTurbo 的“音频/素材/字幕联动”，将已通过的真实 GPT GIF 组织为一条连续的视觉叙事。
+
+在正式合成前，先拿真实旁白音频确定总时长；如有句级时间戳，按听众实际理解的节点安排切镜。执行 `scripts/edit_plan.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav` 生成 `project/edit-plan.json` 草案。对每镜明确：开始帧、持续帧、对应口播、**为什么在这一点剪切**、GIF 原生播放时长、末帧定格比例。剪辑导演实际审过镜头组合后填写 `cut_reason`、`review_notes` 并设 `review_status=approved`。执行同脚本的 `--verify` 后才能进入正式合成。
+
+**默认规则：镜头不能靠超过 25% 的末帧定格凑时长；禁止全片机械等长镜头；音画总时长偏差不得超过 0.35 秒。** 需要补画面时优先独立生成另一个 GPT GIF 视觉事件，不能用矢量图或静帧缓慢放大冒充。无真实语音只能称为 silent_preview；不要把无声视频当成完整知识口播交付。
+
 ## Gate 4 — 音画合成与交付
 
 如果有用户提供的逐句时间戳，写入 `subtitle_cues`（镜头相对时间）并据此生成字幕。默认是一镜头一条字幕，并明确**不是语音识别对齐**。时长不足的 GIF 默认播放一次后定格末帧，不再反复跳回开头。明确的循环素材可用 `--duration-mode loop`。
 
 默认合成 `--asset-mode gpt-only`，会拒绝独立程序化镜头以及非 GPT GIF 来源的复用。`--asset-mode mixed` 只有获得用户明确批准才能使用，且仍须通过 QA。
 
-默认合成**强制 QA 门禁**：导演方案有效、素材来源登记不陈旧、不同镜头素材不重复冒充、技术 QA 与视觉审核均绑定当前文件，才可进入合成。`--allow-unreviewed` 仅限开发调试，输出必须标明 unreviewed_preview，不可作为正式成片。查看状态：`python3 <skill_dir>/scripts/project_status.py --project project --storyboard project/storyboard.json`。
+默认合成**强制 QA 门禁**：还要求真正完成审核的 edit-plan.json、镜头冻结比例及配音时长与画面对齐。导演方案有效、素材来源登记不陈旧、不同镜头素材不重复冒充、技术 QA 与视觉审核均绑定当前文件，才可进入合成。`--allow-unreviewed` 仅限开发调试，输出必须标明 unreviewed_preview，不可作为正式成片。查看状态：`python3 <skill_dir>/scripts/project_status.py --project project --storyboard project/storyboard.json`。
 
 ```bash
 python3 <skill_dir>/scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final.mp4 --burn-subtitles
 ```
 
-如果有外部音频，添加 `--audio project/audio/voiceover.wav`。若没有 libass 字幕滤镜，可省略 `--burn-subtitles` 交付外挂 SRT。
+正式知识口播必须追加 `--audio project/audio/voiceover.wav`；只有明确要无声视觉预览，才可以使用 `--allow-silent-preview` 并在交付中标记无声。若没有 libass 字幕滤镜，可省略 `--burn-subtitles` 交付外挂 SRT。
 
 执行 ffprobe 验证编码、分辨率、fps、时长、音轨，并保留 production/assets.json 和 QA 报告。没有实际配音时不得称为完成的有声口播视频；只能标注为无声视觉预览或 B-roll。复杂字幕、数据标注后期叠加，避免模型画字不准。
 

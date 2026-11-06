@@ -12,6 +12,16 @@
 
 新增 scripts/verify_gif_asset.py：正式镜头要求实际 GIF、有效动作帧、接近原生 9:16、足够尺寸。横屏 GIF 后期加黑边不算通过。详见 references/gif-runtime-contract.md。
 
+## v2 剪辑导演：GIF 不等于视频
+
+受到 [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) 和 [Remotion Skills](https://github.com/remotion-dev/skills) 的启发，gif-studio 增加了**真实配音→帧级剪辑决策→整片预览→最终验收**环节。GPT GIF 仍然是唯一默认主要视觉素材，绝不以 Python 矢量动画替代。
+
+- `scripts/edit_plan.py`：基于实际 GIF 长度与真实音轨生成剪辑决策草案。
+- 每一镜的 `cut_reason` 都要说明为何在此切镜，不允许只按四等份或 7.5 秒分段。
+- 默认单镜末帧定格不得超过该镜时长 25%，避免无聊的大幅停滞。
+- 正式视频必须有真实旁白，且音画总时长偏差不超过 0.35 秒；无声素材只能作为明确标记的预览交付。
+- 详见 [剪辑导演规范](references/editorial-director.md)。
+
 ## 核心理念
 
 - **Narrative-first**：先写一篇连贯口播、审核承接关系，再拆分镜；镜头不能反向决定句子的组织方式。
@@ -66,10 +76,13 @@ python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --rep
 # 真实审阅接触表与动画后才能审批（不可自动伪造通过）：
 python3 scripts/approve_shot.py --project project --storyboard project/storyboard.json --shot shot-01 --reviewer REVIEWER --notes "记录具体所见" --semantic-pass --motion-pass --style-pass --composition-pass
 python3 scripts/project_status.py --project project --storyboard project/storyboard.json
-python3 scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final.mp4 --burn-subtitles
+python3 scripts/edit_plan.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav
+# 观看完整镜头组合后编辑 cut_reason、review_notes、review_status，并再次验收
+python3 scripts/edit_plan.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav --verify
+python3 scripts/compose_video.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav --out project/final.mp4 --burn-subtitles
 ```
 
-有真实旁白音频时，合成命令追加 `--audio project/audio/voiceover.wav`。如需严格逐字同步，须提供真实时间戳/对齐结果；一镜头一行字幕并不等于音频自动识别。
+正式有声作品要求真实旁白；如果只是无声视觉预览，显式传 `--allow-silent-preview`，不得声称已经交付口播成片。如需严格逐字同步，须提供真实时间戳/对齐结果；一镜头一行字幕并不等于音频自动识别。
 
 默认 GIF 只播放一次；时长不足则**保持末帧**，避免重复时突然跳回首帧。确实无缝循环时可以单独使用 `--duration-mode loop`。如有 QA 问题，默认拒绝合成；`--allow-unreviewed` 仅用于开发调试并应明确向用户披露。
 

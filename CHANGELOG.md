@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.0-editorial-alpha] - 2026-11-06
+- Added frame-accurate edit decision list using actual GPT GIF duration and optional narration audio.
+- Formal composition requires an approved edit plan; cut reasons and visual sequence review are mandatory.
+- Formal narrative output requires actual speech within 0.35 seconds of the video; silent output is explicitly a preview.
+- Reject long static end-frame filler (>25% by default) instead of using hold/loop to fake coverage.
+- No vector fallback; GPT GIF remains the core visual source.
+
 ## [1.7.0] - 2026-11-06
 - Added strict portrait 9:16 GIF format/motion verification.
 - Blocked formal visual approval and QA on landscape GIFs even when decodable.
