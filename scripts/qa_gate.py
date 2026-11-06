@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 from inspect_gif import digest
-from production_contract import asset_status, load_manifest, fingerprint
+from production_contract import asset_status, load_manifest, fingerprint, load_contract
 
 def shot_quality(project, shot_id, storyboard=None):
     project = Path(project)
@@ -17,6 +17,11 @@ def shot_quality(project, shot_id, storyboard=None):
         try:
             history=json.loads(attempts.read_text(encoding="utf-8"))
             failures=history.get("failures", [])
+            if storyboard is not None:
+                director, _, _ = load_contract(project, storyboard)
+                active_shot = next(x for x in director["shots"] if x["id"]==shot_id)
+                if history.get("director_fingerprint") != fingerprint(active_shot):
+                    failures = []
             if any(x.get("gif_sha256")==sha for x in failures):
                 return "rejected", "Current GIF failed visual inspection"
             if len(failures)>=2:
