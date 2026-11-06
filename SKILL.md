@@ -66,10 +66,10 @@ python3 <skill_dir>/scripts/director_plan.py --director project/director-plan.js
 **v1.5 生产来源契约**：每个独立视觉镜头必须保存实际使用的完整生成提示词到 `project/prompts/<id>.txt`。生成后，使用实际工具名、真实操作/素材引用登记（不猜测工具或版本）：
 
 ```bash
-python3 <skill_dir>/scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt
+python3 <skill_dir>/scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt --prompt-delivery explicit_tool_argument
 ```
 
-登记不是图像生成工具，也不代表官方接口认证；其作用是追踪素材确实与镜头、风格、提示词一致。允许的另两种 `--kind` 是事先在导演方案中声明的 `programmatic` 和 `intentional_reuse`。
+登记不是图像生成工具，也不代表官方接口认证；其作用是追踪素材与镜头、风格、提示词的记录。**显式工具提示词参数不可用时，登记时必须写 --prompt-delivery context_only_unverified，此来源不得进入正式成片；只有实际传入完整 prompt 参数才允许 --prompt-delivery explicit_tool_argument。**允许的另两种 `--kind` 是事先在导演方案中声明的 `programmatic` 和 `intentional_reuse`。
 
 ```bash
 python3 <skill_dir>/scripts/inspect_gif.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.json --duration 5 --contact-sheet project/qa/shot-01-sheet.jpg

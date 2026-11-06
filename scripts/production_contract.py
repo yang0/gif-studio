@@ -48,7 +48,7 @@ def load_manifest(project):
         raise ValueError("Invalid production assets manifest")
     return result
 
-def register(project, storyboard, shot_id, kind, tool_identity, reference, prompt_path=None):
+def register(project, storyboard, shot_id, kind, tool_identity, reference, prompt_path=None, prompt_delivery="context_only_unverified"):
     project = Path(project)
     if kind not in ALLOWED_KINDS:
         raise ValueError("Unknown asset kind")
@@ -77,7 +77,10 @@ def register(project, storyboard, shot_id, kind, tool_identity, reference, promp
         prompt_hash = digest(prompt_path)
     if kind == "gpt_gif" and not prompt_hash:
         raise ValueError("GPT GIF requires saved exact generation prompt")
+    if kind == "gpt_gif" and prompt_delivery not in ("explicit_tool_argument", "context_only_unverified"):
+        raise ValueError("Unknown prompt delivery status")
     record = {"kind":kind,"source_sha256":digest(source),
+              "prompt_delivery":prompt_delivery if kind == "gpt_gif" else None,
               "tool_identity":tool_identity,"production_reference":reference,
               "prompt_sha256":prompt_hash,
               "prompt_path":str(prompt_path) if prompt_path else None,
@@ -119,6 +122,8 @@ def asset_status(project, storyboard, shot_id):
             return "stale", "Missing production tool or reference"
         if record["kind"] == "gpt_gif" and not record.get("prompt_sha256"):
             return "stale", "Generation prompt missing"
+        if record["kind"] == "gpt_gif" and record.get("prompt_delivery") != "explicit_tool_argument":
+            return "stale", "GIF prompt delivery is context-only/unverified; cannot enter formal production"
         if record.get("prompt_sha256"):
             prompt = record.get("prompt_path")
             if not prompt or not Path(prompt).is_file() or digest(prompt) != record["prompt_sha256"]:

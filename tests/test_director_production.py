@@ -58,7 +58,7 @@ def make_project(root, count=2):
         colors = ("#eac250","#d75346","#3f769e","#23644d") if i==0 else (
                   "#a753bb","#556fa2","#e67c3e","#2d9147")
         make_gif(root/"gifs"/(sid+".gif"), colors)
-        (root/"prompts"/(sid+".txt")).write_text("actual generation instructions "+sid,
+        (root/"prompts"/(sid+".txt"), prompt_delivery="explicit_tool_argument").write_text("actual generation instructions "+sid,
                                                   encoding="utf-8")
     board={"project_title":"test","width":180,"height":320,"fps":24,"shots":shots}
     director={"version":1,"creative_thesis":"因果关系通过连续视觉变化表达", "shots":plans}
@@ -180,12 +180,24 @@ class DirectorProductionTests(unittest.TestCase):
             frames[0].save(gif,format="GIF",save_all=True,
                            append_images=frames[1:],duration=[180]*4,loop=0)
             register(root,board,"shot-01","gpt_gif","codex-gif-tool",
-                     "artifact-landscape",root/"prompts/shot-01.txt")
+                     "artifact-landscape",root/"prompts/shot-01.txt", prompt_delivery="explicit_tool_argument")
             report=inspect(gif,1.2,.6,root/"qa/shot-01-sheet.jpg")
             (root/"qa/shot-01.json").write_text(json.dumps(report),encoding="utf-8")
             self.assertEqual("rejected_technical",shot_quality(root,"shot-01",board)[0])
             with self.assertRaisesRegex(ValueError,"Strict GIF"):
                 approve(root,"shot-01","reviewer","Actually reviewed frames",board,FLAGS)
+
+    def test_context_only_delivery_is_not_formal_ready(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            board,_=make_project(root,1)
+            register(root,board,"shot-01","gpt_gif","context-image-tool",
+                     "actual-generation-reference",root/"prompts/shot-01.txt",
+                     prompt_delivery="context_only_unverified")
+            status,why=asset_status(root,board,"shot-01")
+            self.assertEqual("stale",status)
+            self.assertIn("context-only",why)
+            self.assertTrue(production_preflight(root,board))
 
     def test_tampering_invalidates_provenance_and_review(self):
         with tempfile.TemporaryDirectory() as d:

@@ -60,7 +60,7 @@ python3 scripts/validate_storyboard.py --storyboard project/storyboard.json
 python3 scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json
 python3 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json
 python3 scripts/audit_script.py --script project/script.json --storyboard project/storyboard.json
-python3 scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt
+python3 scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt --prompt-delivery explicit_tool_argument
 python3 scripts/verify_gif_asset.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.intake.json
 python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --report project/qa/shot-01.json --contact-sheet project/qa/shot-01-sheet.jpg
 # 真实审阅接触表与动画后才能审批（不可自动伪造通过）：

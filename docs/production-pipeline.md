@@ -42,3 +42,7 @@
 导演计划必须提供 must_show（至少两条具体事件/物件）和 must_not_show（不应出现的符号）。先运行 python3 scripts/build_gif_prompts.py --project project --storyboard project/storyboard.json，生成 prompts/shot-01.txt，之后才向当前实际可用的 GPT GIF 工具提交请求。
 
 发生跑题时，必须观看 GIF、保留源文件、记录具体观察；运行 review_gif_attempt.py 生成一次 retry-2 提示词。连续两次失败需修改导演方案才能再试。禁止使用程序绘图替代 GIF。
+
+## 提示词送达状态（强制）
+
+register_asset.py 增加 --prompt-delivery explicit_tool_argument 或 context_only_unverified。只有图像/GIF 工具接口**实际支持文本 prompt 字段，且发送了完整逐镜 prompt**时，才能声明 explicit_tool_argument。当前会话中只能从上下文推断的图像工具必须记录 context_only_unverified，正式合成将阻断该来源。该值仍是执行人的声明，不代表远端 API 密码学证明。绝不能为了通过测试而虚报显式送达。

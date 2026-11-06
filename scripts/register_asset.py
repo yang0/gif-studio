@@ -15,12 +15,15 @@ def main():
     p.add_argument("--tool", required=True, help="Actual tool used, not a guessed API")
     p.add_argument("--reference", required=True, help="Actual operation ID or artifact reference")
     p.add_argument("--prompt", help="Exact saved prompt, mandatory for gpt_gif")
+    p.add_argument("--prompt-delivery", choices=("explicit_tool_argument","context_only_unverified"),
+                   default="context_only_unverified",
+                   help="Honest delivery mode; only a tool with a prompt argument can use explicit_tool_argument")
     a = p.parse_args()
     board = json.loads(Path(a.storyboard).read_text(encoding="utf-8"))
     problems = validate(board)
     if problems:
         raise ValueError("; ".join(problems))
-    print(json.dumps(register(a.project, board, a.shot, a.kind, a.tool, a.reference, a.prompt),
+    print(json.dumps(register(a.project, board, a.shot, a.kind, a.tool, a.reference, a.prompt, a.prompt_delivery),
                      ensure_ascii=False, indent=2))
 
 if __name__ == "__main__":
