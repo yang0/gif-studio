@@ -105,7 +105,7 @@ python3 <skill_dir>/scripts/compose_video.py --project project --storyboard proj
 
 正式知识口播必须追加 `--audio project/audio/voiceover.wav`；只有明确要无声视觉预览，才可以使用 `--allow-silent-preview` 并在交付中标记无声。若没有 libass 字幕滤镜，可省略 `--burn-subtitles` 交付外挂 SRT。
 
-执行 ffprobe 验证编码、分辨率、fps、时长、音轨，并保留 production/assets.json 和 QA 报告。没有实际配音时不得称为完成的有声口播视频；只能标注为无声视觉预览或 B-roll。复杂字幕、数据标注后期叠加，避免模型画字不准。
+正式视频渲染完成后不能直接标记作品已成功。必须执行 `python3 <skill_dir>/scripts/final_review.py --project project --video project/final.mp4 --inspect` 生成整片接触表，真正观看**完整视频并试听旁白**，审核画面语义、节奏、连续性、字幕和音频。通过后显式执行 `final_review.py --approve` 并附具体观察与五项审核标志。无音轨无法通过有声视频最终交付门禁。详见 references/continuity-and-shot-selection.md。执行 ffprobe 验证编码、分辨率、fps、时长、音轨，并保留 production/assets.json 和 QA 报告。没有实际配音时不得称为完成的有声口播视频；只能标注为无声视觉预览或 B-roll。复杂字幕、数据标注后期叠加，避免模型画字不准。
 
 ## 状态和失败恢复
 

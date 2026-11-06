@@ -80,6 +80,9 @@ python3 scripts/edit_plan.py --project project --storyboard project/storyboard.j
 # 观看完整镜头组合后编辑 cut_reason、review_notes、review_status，并再次验收
 python3 scripts/edit_plan.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav --verify
 python3 scripts/compose_video.py --project project --storyboard project/storyboard.json --audio project/audio/voiceover.wav --out project/final.mp4 --burn-subtitles
+python3 scripts/final_review.py --project project --video project/final.mp4 --inspect
+# 真正观看并试听整片后，记录审核结论（不能由生产脚本自己宣布通过）
+python3 scripts/final_review.py --project project --video project/final.mp4 --approve --reviewer REVIEWER --notes "逐段审核的具体观察及修改结果" --semantic-pass --pacing-pass --continuity-pass --subtitles-pass --audio-pass
 ```
 
 正式有声作品要求真实旁白；如果只是无声视觉预览，显式传 `--allow-silent-preview`，不得声称已经交付口播成片。如需严格逐字同步，须提供真实时间戳/对齐结果；一镜头一行字幕并不等于音频自动识别。
