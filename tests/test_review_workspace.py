@@ -91,6 +91,23 @@ class ReviewWorkspaceTests(unittest.TestCase):
         self.assertIn('data-start="0.500"',page)
         self.assertIn("NOT APPROVED",page.upper())
 
+    def test_gallery_can_display_variable_sequence(self):
+        select(self.root,"shot-01","take-a","Supports a close action cut")
+        (self.root/"build").mkdir(exist_ok=True)
+        (self.root/"build/sequence-preview.mp4").write_bytes(b"dummy path-only marker")
+        sequence=self.root/"sequence.json"
+        sequence.write_text(json.dumps({
+            "version":2,"fps":24,"status":"draft",
+            "clips":[{"id":"cut-001","shot_id":"shot-01",
+                       "candidate_id":"take-a","start_frame":12,
+                       "duration_frames":12,
+                       "cut_reason":"Cut to the event itself"}]}),encoding="utf-8")
+        html=make_html(self.root,self.sb,sequence=sequence).read_text(encoding="utf-8")
+        self.assertIn("sequence-preview.mp4",html)
+        self.assertIn("shot-01 · take-a",html)
+        self.assertIn('data-start="0.500"',html)
+        self.assertIn('id="editorial-player"',html)
+
     def test_preview_rejects_tampered_selection(self):
         select(self.root,"shot-01","take-a","Fits narrative motion better")
         with (self.root/"gifs/shot-01.gif").open("ab") as f:

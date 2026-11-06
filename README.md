@@ -42,6 +42,26 @@ python3 scripts/review_workspace.py --project project --storyboard project/story
 
 再次打开画廊即可看到实际草稿 MP4 和可点击跳转的镜头时间线。默认位置为 `project/build/editorial-preview.mp4`，状态强制标为 `UNREVIEWED_EDITORIAL_PREVIEW`。它允许在质量审核前观看完整节奏，但**不能替代正式 GIF QA、剪辑导演签核和成片验收**。没有真实配音的草稿必须明确标注为无声预览。
 
+## v2.2 · 一段口播可以剪出多个 GIF 镜头
+
+**不再把“分镜数量”等同于“成片镜头数量”。** 可以从素材池里的不同候选，自由选择几个特写、全景和动作镜头，决定各自截取的真实 GIF 时间范围，并按输出帧精确排列。新模块是独立的可变镜头剪辑预览器，不替代原有正式 QA。
+
+```bash
+# 从已经选好初始候选的素材池建立剪辑草稿
+python3 scripts/sequence_cut.py --project project --storyboard project/storyboard.json --init
+
+# 自行编辑 project/sequence.json 中的 clips（可增加来自同一口播段落的多个候选）
+python3 scripts/sequence_cut.py --project project --verify
+python3 scripts/sequence_cut.py --project project --preview
+
+# 可在本地画廊浏览每个候选，并点击时间线跳转到草稿视频的具体镜头
+python3 scripts/review_workspace.py --project project --storyboard project/storyboard.json --sequence project/sequence.json
+```
+
+剪辑 v2 使用的是真实候选 GIF 字节，不会画任何矢量替代素材。会检查原始 GIF 的 SHA256、所选时段不超过真实 GIF 时长、时间线无空隙重叠，以及切镜原因。旁白音轨长度不匹配会出警告，且不会悄悄截短音频冒充配音成功。输出明确标记为 **UNREVIEWED_SEQUENCE_PREVIEW**；正式发布端到端的候选审核仍在后续阶段。
+
+详细操作：[可变镜头剪辑台](references/sequence-editing.md)。
+
 ## v2 剪辑导演：GIF 不等于视频
 
 受到 [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) 和 [Remotion Skills](https://github.com/remotion-dev/skills) 的启发，gif-studio 增加了**真实配音→帧级剪辑决策→整片预览→最终验收**环节。GPT GIF 仍然是唯一默认主要视觉素材，绝不以 Python 矢量动画替代。

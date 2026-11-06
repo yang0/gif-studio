@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.0-variable-sequence-alpha] - 2026-11-07
+- Added version 2 frame-accurate EDL with arbitrarily many real candidate clips per narration shot.
+- Each cut carries source/candidate IDs, immutable GIF hash, source in-frame, timeline in-frame, duration and editorial reason.
+- Added actual FFmpeg clip trimming and UNREVIEWED_SEQUENCE_PREVIEW rendering without placeholder graphics.
+- Added version 2 seekable timeline in the local candidate HTML gallery.
+- Regression tests validate multiple cuts per shot, overlap/gap checks, stale source hashes and rendered MP4 preview.
+- Explicitly kept formal release gating separate from multi-clip draft functionality.
+
 ## [2.1.0-review-workspace-alpha] - 2026-11-06
 - Added a read-only, offline HTML library showing each actual candidate GIF, metadata, origins, and selected alternatives.
 - Added explicit unreviewed edit-preview MP4 render from selected GIF bytes, without any generated substitute visual.
