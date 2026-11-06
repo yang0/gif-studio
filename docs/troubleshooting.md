@@ -1,35 +1,25 @@
-# Troubleshooting / 常见问题
+# gif-studio Troubleshooting
 
 ## Codex 没有 GIF 工具
+本仓库仅定义制作协议与后期脚本，不会赋予 Codex 新模型功能。无法输出 GIF 时只能继续分镜和 prompt，不能虚构素材，也不自动切换第三方视频服务。
 
-Skill 本身不能给 Codex 增加新模型能力。先检查当前会话实际可用的图像生成工具及是否支持 GIF 输出。无法确认时，只创建 storyboard 与 prompts，并停止在 Gate 3；不要调用未授权的外部 API。
+## 还想使用 Vox / 拼贴风？
+从 `presets/styles.json` 选择 `editorial-collage`；它是可选预设之一，不是默认。
 
-## Pillow 模块缺失
+## 没有 ffmpeg / Pillow
+执行 `python3 -m pip install -r requirements.txt`，通过系统包管理器安装 ffmpeg 和 ffprobe。运行 `bash scripts/check_setup.sh` 检测 libx264 和字幕滤镜。
 
-```bash
-python3 -m pip install -r requirements.txt
-```
+## 报错 QA blocked
+先运行 `inspect_gif.py` 生成 `qa/<id>.json` 和 contact sheet。实际观看后使用 `approve_shot.py` 创建 `qa/<id>.visual.json`。如果 GIF 被编辑/重生，旧审核因为 SHA256 不符失效。开发阶段可使用 `--allow-unreviewed`，禁止把这种成片误报为正式验收。
 
-## ffmpeg 找不到
+## GIF 短于镜头
+默认只播放一次，后半段停在末帧。如需真正循环则显式 `--duration-mode loop`，并先复核循环接缝。
 
-macOS: `brew install ffmpeg`；Ubuntu: `sudo apt-get install ffmpeg`。
+## 字幕时间偏差
+默认每镜头一条字幕；可以在 shot 内提供 `subtitle_cues` 数组，每个条目包含相对时间 `start_sec`、`end_sec` 和 `text`。这些时间戳需来自真实语音对齐或人工标记，不是脚本自动生成的语音识别。
 
-## ffmpeg 字幕滤镜不可用
+## 音频长度与视频不同
+会裁切长音频或给短音频补静音；需人工确认对应叙事节奏。
 
-执行 `ffmpeg -filters | grep subtitles` 检查 libass 字幕滤镜。若缺失，先运行不带 `--burn-subtitles` 的合成命令；脚本仍会输出外挂 `subtitles/captions.srt`。
-
-## GIF 尺寸不是 9:16
-
-Inspector 报警告但不会错误地宣布生成失败。合成器用 scale + pad 保留比例，不拉伸。为了避免黑边，最好在生成阶段要求真正的 9:16。
-
-## GIF 时长短于分镜时长
-
-合成器会自动循环 GIF 至目标时长；长于分镜时则截断。为避免观众看到重复，最好把关键运动设计得接近目标时长。
-
-## 音频比视频长或短
-
-这是镜头级字幕与外部配音合成，不是自动配音对齐。合成器截断较长音轨，对较短音轨补静音。需要逐字同步时，请先制作带时间戳的字幕与镜头时长表。
-
-## 质量检查已通过但视频很差
-
-`inspect_gif.py` 只验证可解码、帧数与粗粒度相邻帧差异。动作错误、伪字、歧义、主体不一致等问题必须逐帧观看并在 prompt 中针对性修复。
+## 缺少字幕滤镜
+运行 `ffmpeg -filters | grep subtitles`。缺少 libass 时不使用 `--burn-subtitles`，导出外挂 SRT。
