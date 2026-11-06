@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0] - 2026-11-06
+
+- Added director-plan validation before animation production (v1.4).
+- Added content-state transitions, shot composition, entrance/exit continuity and explicit reuse decisions.
+- Added asset provenance with real tool declaration, prompt SHA, shot fingerprint, director fingerprint and style SHA (v1.5).
+- Formal composition now blocks missing/stale provenance and undisclosed duplicate GIF assets.
+- Formal visual approval now requires contact sheet and four explicit review criteria.
+- Added synthetic regression tests for stale files, repeated shots, missing director and semantic QA gates.
+- No claim of full GPT GIF model integration: tool execution still depends on available Codex capability.
+
 ## [1.3.0] - 2026-11-06
 - Narrative-first script drafting and review precede all storyboards.
 - Added separate spoken-voice profiles, complete script structure and narration export.

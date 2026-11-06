@@ -35,6 +35,22 @@ python3 <skill_dir>/scripts/audit_script.py --script project/script.json --voice
 
 用表格交付分镜与选定风格，等待确认。用户明确提出“全自动”则可跳过等待，但分镜和风格锁仍要落盘。
 
+## Gate 1C — 视觉导演方案（v1.4 必须）
+
+读取 `references/visual-storytelling.md`，在生成任何 GIF 前，写入 `project/director-plan.json`。参照 `templates/director-plan.json`，为每个镜头明确：
+- 起始状态 → 有信息含量的变化事件 → 结束状态；
+- 画面真正向观众证明的视觉因果关系；
+- 主体尺寸、构图、入镜/出镜和前后镜头的连续性；
+- 素材策略 `new_gpt_gif` / `intentional_reuse` / `programmatic`。
+
+拒绝所有镜头强制套同一 PPT 卡片版式。每条镜头必须先通过：
+
+```bash
+python3 <skill_dir>/scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json
+```
+
+默认一镜头一独立 GIF；有意复用必须明确原始镜头和叙事理由。需要精确数字、公式时可预先声明程序动画，但不得将其冒充 GPT GIF。风格完全遵循用户的 style-lock，而非默认 Vox。
+
 ## Gate 2 — 视觉设计和终帧
 
 根据 `references/prompt-templates.md` 生成每镜头静帧提示词，**必须注入所选 style-lock 的完整定义**。如果用户提交风格参考图，描述构图、材质、光照、色彩、摄影机、角色和字体约束并写入风格锁。生成 `stills/<id>.png`（仅在环境支持时）并自查；如果不支持静帧生成，不得虚报文件。
@@ -45,17 +61,31 @@ python3 <skill_dir>/scripts/audit_script.py --script project/script.json --voice
 
 实际生成 GIF 并保存到 `project/gifs/<id>.gif`。不同模型工具可能不支持参考图、帧数或指定时长；只使用当下可用参数，不假装生成与终帧严格一致。
 
+**v1.5 生产来源契约**：每个独立视觉镜头必须保存实际使用的完整生成提示词到 `project/prompts/<id>.txt`。生成后，使用实际工具名、真实操作/素材引用登记（不猜测工具或版本）：
+
+```bash
+python3 <skill_dir>/scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt
+```
+
+登记不是图像生成工具，也不代表官方接口认证；其作用是追踪素材确实与镜头、风格、提示词一致。允许的另两种 `--kind` 是事先在导演方案中声明的 `programmatic` 和 `intentional_reuse`。
+
 ```bash
 python3 <skill_dir>/scripts/inspect_gif.py --gif project/gifs/shot-01.gif --report project/qa/shot-01.json --duration 5 --contact-sheet project/qa/shot-01-sheet.jpg
 ```
 
-必须阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅后，使用 `scripts/approve_shot.py` 记录 `qa/<id>.visual.json`，将源文件 SHA256 与批准绑定。失败重生一次，保留旧版本供比较，不覆盖已批准素材。不要无凭据自动批准。
+必须阅读 contact sheet 的首、中、末帧并检查：知识是否正确、对象是否漂移、文字是否乱码、风格是否遵循 style-lock、主体是否变形、镜头/循环接缝是否不合理。技术 QA `pass=true` 只代表格式通过；视觉审阅时必须逐项核查语义、动作、风格、构图，然后使用 `scripts/approve_shot.py` 明确记录四项结论、真实审核人和审核依据：
+
+```bash
+python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard project/storyboard.json --shot shot-01 --reviewer REVIEWER --notes "真实的视觉观察结果" --semantic-pass --motion-pass --style-pass --composition-pass
+```
+
+未真正观看动画时禁止调用上述通过标记。审批绑定 GIF 源文件、实际 contact sheet、来源登记以及导演和风格版本。失败镜头只重做一次，保留旧版本，不覆盖其他已批准素材。
 
 ## Gate 4 — 音画合成与交付
 
 如果有用户提供的逐句时间戳，写入 `subtitle_cues`（镜头相对时间）并据此生成字幕。默认是一镜头一条字幕，并明确**不是语音识别对齐**。时长不足的 GIF 默认播放一次后定格末帧，不再反复跳回开头。明确的循环素材可用 `--duration-mode loop`。
 
-默认合成**强制 QA 门禁**：`qa/<id>.json` 格式通过且 source SHA 与文件一致，并有匹配 SHA 的 `qa/<id>.visual.json` 视觉批准，才可进入合成。不得用忽略 QA 当成常规操作。
+默认合成**强制 QA 门禁**：导演方案有效、素材来源登记不陈旧、不同镜头素材不重复冒充、技术 QA 与视觉审核均绑定当前文件，才可进入合成。`--allow-unreviewed` 仅限开发调试，输出必须标明 unreviewed_preview，不可作为正式成片。查看状态：`python3 <skill_dir>/scripts/project_status.py --project project --storyboard project/storyboard.json`。
 
 ```bash
 python3 <skill_dir>/scripts/compose_video.py --project project --storyboard project/storyboard.json --out project/final.mp4 --burn-subtitles
@@ -63,12 +93,14 @@ python3 <skill_dir>/scripts/compose_video.py --project project --storyboard proj
 
 如果有外部音频，添加 `--audio project/audio/voiceover.wav`。若没有 libass 字幕滤镜，可省略 `--burn-subtitles` 交付外挂 SRT。
 
-执行 ffprobe 验证编码、分辨率、fps、时间、音轨；生成项目 manifest 和 QA 报告。复杂字幕、数据标注后期叠加，避免模型画字不准。
+执行 ffprobe 验证编码、分辨率、fps、时长、音轨，并保留 production/assets.json 和 QA 报告。没有实际配音时不得称为完成的有声口播视频；只能标注为无声视觉预览或 B-roll。复杂字幕、数据标注后期叠加，避免模型画字不准。
 
 ## 状态和失败恢复
 
-每条镜头独立，使用 `scripts/project_status.py --project project --storyboard project/storyboard.json` 列出 missing、generated、technical_passed、visual_approved、ready。每次生成只针对未通过的镜头；如果 GIF 内容变动，SHA 不匹配的旧 QA 自动失效。
+每镜头独立。project_status.py 可显示 missing、unregistered、stale、generated、technical_passed、ready。每次只重做有问题的镜头。修改 GIF 字节、镜头分镜、导演方案、风格锁或提示词会使原登记失效；所有 QA 必须重新匹配当前素材。
 
 ## 边界与升级
 
-口播文字声线与画面风格两套独立约束。未确认完整口播，禁止开始生成镜头 GIF。\n\n本 Skill 不需要 Remotion/Gemini/Veo；如用户以后明确需要可编辑复杂时间线，可在其允许时选用额外渲染工具。当前 GIF 工具不保证逐帧一致，质量审查必须保留人工/视觉模型环节。项目模板在 `templates/`，风格配置在 `presets/`，质量检查见 `references/quality-checklist.md`。
+口播文字声线与画面风格两套独立约束。未确认完整口播，禁止开始生成镜头 GIF。
+
+本 Skill 不需要 Remotion/Gemini/Veo；如用户以后明确需要可编辑复杂时间线，可在其允许时选用额外渲染工具。当前 GIF 工具不保证逐帧一致，质量审查必须保留人工/视觉模型环节。项目模板在 `templates/`，风格配置在 `presets/`，质量检查见 `references/quality-checklist.md`。

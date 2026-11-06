@@ -23,3 +23,12 @@
 
 ## 缺少字幕滤镜
 运行 `ffmpeg -filters | grep subtitles`。缺少 libass 时不使用 `--burn-subtitles`，导出外挂 SRT。
+
+## v1.5 提示 provenance stale / unregistered
+缺少 director-plan.json、style-lock.json、production/assets.json 或相应提示词。按 docs/production-pipeline.md 登记来源；如果修改了画面、分镜、风格或提示词，需重新登记和审核。
+
+## duplicate GIF detected
+检查是否把同一 GIF 复制成多个不同分镜。只有导演方案事先声明 intentional_reuse 且记录复用来源和理由时才允许复用。
+
+## formal visual review rejected
+必须先生成 contact sheet，真实核对语义、动作、风格和构图，再用 scripts/approve_shot.py 明确记录四项审核。不得由生成脚本自动填写通过结果。

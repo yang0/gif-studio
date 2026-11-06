@@ -25,6 +25,7 @@ jobs:
       - name: Validate storyboards
         run: |
           python scripts/validate_storyboard.py --storyboard templates/storyboard.json
+          python scripts/director_plan.py --director templates/director-plan.json --storyboard templates/storyboard.json
           python scripts/validate_storyboard.py --storyboard examples/compound-interest/storyboard.json
       - name: Unit and pipeline tests
         run: python -m unittest discover -s tests -v
