@@ -249,7 +249,14 @@ class DirectorProductionTests(unittest.TestCase):
             result=subprocess.run(cmd,capture_output=True,text=True)
             self.assertNotEqual(result.returncode,0)
             register_and_review(root,board)
-            subprocess.run(cmd,check=True)
+            from edit_plan import create_plan
+            plan=create_plan(root,board)
+            plan["review_status"]="approved"
+            plan["review_notes"]="Test fixture only, not real visual approval"
+            for clip in plan["shots"]:
+                clip["cut_reason"]="Cut at the end of the synthetic test scene"
+            (root/"edit-plan.json").write_text(json.dumps(plan),encoding="utf-8")
+            subprocess.run(cmd+["--allow-silent-preview"],check=True)
             report=json.loads((root/"build/delivery-report.json").read_text(encoding="utf-8"))
             self.assertTrue(report["qa_enforced"])
             self.assertEqual("qa_reviewed_silent_preview",report["delivery_class"])

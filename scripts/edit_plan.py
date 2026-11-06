@@ -122,6 +122,8 @@ def validate_plan(project, board, plan, audio=None, require_review=True, require
         issues.append("Total frame count mismatch")
     if require_review and plan.get("review_status")!="approved":
         issues.append("Edit plan has not been reviewed and approved")
+    if require_review and len(str(plan.get("review_notes","")).strip())<12:
+        issues.append("Edit review must include substantive sequence-level notes")
     if audio:
         actual=probe_audio(audio)
         if abs(actual-expected_start/fps)>MAX_AUDIO_DRIFT:
