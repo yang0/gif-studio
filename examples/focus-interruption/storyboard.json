@@ -1,0 +1,47 @@
+{
+  "project_title": "手机通知为什么会打断专注",
+  "width": 720,
+  "height": 1280,
+  "fps": 24,
+  "style_id": "hand-drawn",
+  "shots": [
+    {
+      "id": "shot-01",
+      "duration_sec": 5,
+      "narration": "你以为看一眼手机通知，只花了几秒钟。",
+      "subtitle": "你以为看一眼通知，只花几秒钟",
+      "visual_goal": "建立专注中的工作场景与短暂通知诱因",
+      "visual_mode": "visual_metaphor",
+      "motion_plan": [
+        "人物在电脑前工作，思路线持续延伸",
+        "手机在场景边缘亮起通知"
+      ]
+    },
+    {
+      "id": "shot-02",
+      "duration_sec": 5.5,
+      "narration": "但被打断的不只是时间，还有你脑子里正在延续的思路。",
+      "subtitle": "但思路也被一起截断",
+      "visual_goal": "把认知中断表达为连续思路线被切断",
+      "visual_mode": "mechanism_breakdown",
+      "motion_plan": [
+        "上一镜的线索持续延伸",
+        "通知卡片从手机弹出并撞断线索",
+        "末帧明确停在断裂状态"
+      ]
+    },
+    {
+      "id": "shot-03",
+      "duration_sec": 7.5,
+      "narration": "回到电脑前，你还得重新想起刚才做到哪一步。所以关掉无关通知，省下的其实是找回思路的时间。",
+      "subtitle": "重新进入状态，也需要时间",
+      "visual_goal": "表达重返任务时需要重建线索并总结可减少通知",
+      "visual_mode": "compare_contrast",
+      "motion_plan": [
+        "人物回看电脑但原线索断裂",
+        "人物重新找回片段并连接",
+        "手机进入静音状态，线索恢复流动"
+      ]
+    }
+  ]
+}

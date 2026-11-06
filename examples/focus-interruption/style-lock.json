@@ -1,0 +1,27 @@
+{
+  "style_id": "hand-drawn",
+  "palette": {
+    "background": "#F5F1E8",
+    "primary": "#273A42",
+    "accent": "#E38C55"
+  },
+  "materials": "铅笔线条和有纸张质感的柔和手绘，主体人物与设备结构清楚",
+  "lighting": "柔和自然光",
+  "camera": "依镜头变化的固定手绘画幅，不漂移",
+  "motion_grammar": [
+    "连线",
+    "断线",
+    "重新连接",
+    "人物转头"
+  ],
+  "negative_constraints": [
+    "paper-cutout halftone collage",
+    "generic stock infographic cards",
+    "floating brain bulb book icons"
+  ],
+  "characters": {
+    "worker": "同一个成年人物，圆脸短发，浅蓝上衣，三镜头外观一致"
+  },
+  "typography": "后期渲染字幕，GIF画面不写字",
+  "subtitle_safe_area": "底部18%"
+}
