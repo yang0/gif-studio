@@ -30,7 +30,7 @@ def shot_quality(project, shot_id, storyboard=None):
         except (ValueError,OSError):
             return "rejected", "Invalid failed-attempt record"
     if storyboard is not None:
-        strict=validate_strict_gif(gif, min_short_edge=80)
+        strict=validate_strict_gif(gif)
         if not strict["pass"]:
             return "rejected_technical", "Strict GIF intake: " + "; ".join(strict["issues"])
     if storyboard is not None:

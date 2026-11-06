@@ -20,7 +20,7 @@ def approve(project, shot, reviewer, notes, storyboard=None, visual_checks=None)
     sha = digest(source)
     if not report.get("pass") or report.get("source_sha256") != sha:
         raise ValueError("Technical QA missing, failed or stale")
-    strict = validate_strict_gif(source, min_short_edge=80)
+    strict = validate_strict_gif(source)
     if not strict["pass"]:
         raise ValueError("Strict GIF intake failed: " + "; ".join(strict["issues"]))
     if not reviewer.strip() or not notes.strip():
