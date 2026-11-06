@@ -5,7 +5,7 @@
     {
       "id": "shot-01",
       "spoken_point": "通知出现前的工作状态",
-      "source_anchor": "手机通知",
+      "source_anchor": "通知",
       "visual_proof": "工作中一条连续线索延伸，手机即将出现干扰",
       "start_state": "人物在电脑前持续写作，手绘思路线完整延伸",
       "change_event": "手机在人物视野边缘亮起一条清晰通知，但工作线仍在延伸",
@@ -28,7 +28,7 @@
     {
       "id": "shot-02",
       "spoken_point": "思路在任务切换时被打断",
-      "source_anchor": "被打断",
+      "source_anchor": "工作思路",
       "visual_proof": "上一镜连续线索被通知的动作截断，形成可见空缺",
       "start_state": "人物还在看电脑，思路线完整连接",
       "change_event": "手机通知卡片明显弹出，人物转向手机，线索在通知穿过的位置断成两截",
@@ -52,7 +52,7 @@
     {
       "id": "shot-03",
       "spoken_point": "重回任务需要重新找回原来的线索",
-      "source_anchor": "重新想起",
+      "source_anchor": "重新找回",
       "visual_proof": "人物不能立刻恢复工作，必须先找到分散的线索并接回，关通知后再次稳定",
       "start_state": "人物回到电脑前但线索断裂，工作无法马上继续",
       "change_event": "人物依次寻找线段并把它们连接起来，手机切为静音后不再出现通知，思路线再次流动",

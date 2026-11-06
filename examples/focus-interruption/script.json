@@ -4,7 +4,7 @@
   "central_question": "为什么看一眼通知会造成比查看时间更长的工作中断",
   "thesis": "任务切换导致认知线索需要重新建立",
   "structure": "explanation",
-  "target_duration_sec": 18,
+  "target_duration_sec": 20,
   "voice": "自然、不夸张、具体",
   "claims_to_verify": [],
   "paragraphs": [
@@ -13,7 +13,7 @@
       "role": "setup",
       "handoff": "先让观众想起查看通知的经历",
       "listener_question": "为什么短短几秒影响更久？",
-      "text": "你以为看一眼手机通知，只花了几秒钟。",
+      "text": "你以为看一眼通知，只花几秒。",
       "verified": true
     },
     {
@@ -21,7 +21,7 @@
       "role": "mechanism",
       "handoff": "解释中断并非只发生在手机上，而是工作线索被截断",
       "listener_question": "回去之后为什么还是难继续？",
-      "text": "但被打断的不只是时间，还有你脑子里正在延续的思路。",
+      "text": "可手机一响，刚才连贯的工作思路就断了。",
       "verified": true
     },
     {
@@ -29,7 +29,7 @@
       "role": "payoff",
       "handoff": "用回到桌前的具体困难解释降低打断的收益",
       "listener_question": "怎么减少这部分代价？",
-      "text": "回到电脑前，你还得重新想起刚才做到哪一步。所以关掉无关通知，省下的其实是找回思路的时间。",
+      "text": "回到电脑前，你得重新找回线索。关掉无关通知，省下的正是这段时间。",
       "verified": true
     }
   ]

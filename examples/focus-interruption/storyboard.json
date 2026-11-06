@@ -7,8 +7,8 @@
   "shots": [
     {
       "id": "shot-01",
-      "duration_sec": 5,
-      "narration": "你以为看一眼手机通知，只花了几秒钟。",
+      "duration_sec": 4.5,
+      "narration": "你以为看一眼通知，只花几秒。",
       "subtitle": "你以为看一眼通知，只花几秒钟",
       "visual_goal": "建立专注中的工作场景与短暂通知诱因",
       "visual_mode": "visual_metaphor",
@@ -19,8 +19,8 @@
     },
     {
       "id": "shot-02",
-      "duration_sec": 5.5,
-      "narration": "但被打断的不只是时间，还有你脑子里正在延续的思路。",
+      "duration_sec": 6,
+      "narration": "可手机一响，刚才连贯的工作思路就断了。",
       "subtitle": "但思路也被一起截断",
       "visual_goal": "把认知中断表达为连续思路线被切断",
       "visual_mode": "mechanism_breakdown",
@@ -32,8 +32,8 @@
     },
     {
       "id": "shot-03",
-      "duration_sec": 7.5,
-      "narration": "回到电脑前，你还得重新想起刚才做到哪一步。所以关掉无关通知，省下的其实是找回思路的时间。",
+      "duration_sec": 9.5,
+      "narration": "回到电脑前，你得重新找回线索。关掉无关通知，省下的正是这段时间。",
       "subtitle": "重新进入状态，也需要时间",
       "visual_goal": "表达重返任务时需要重建线索并总结可减少通知",
       "visual_mode": "compare_contrast",
