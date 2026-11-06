@@ -4,9 +4,12 @@
 
 ## 核心理念
 
-- **Narrative-first**：先写一篇连贯口播、审核承接关系，再拆分镜；镜头不能反向决定句子的组织方式。\n- **Style-first**：内容决定视觉处理；提供 7 套可扩展风格（极简信息图 / 手绘 / 黏土 3D / 水彩 / 像素 / 电影 / 编辑拼贴），也支持用户参考图。
+- **Narrative-first**：先写一篇连贯口播、审核承接关系，再拆分镜；镜头不能反向决定句子的组织方式。
+- **Style-first**：内容决定视觉处理；提供 7 套可扩展风格（极简信息图 / 手绘 / 黏土 3D / 水彩 / 像素 / 电影 / 编辑拼贴），也支持用户参考图。
 - **Voice-first**：镜头时长按口播安排；字幕支持分镜级与带明确时间戳的 cue。
-- **Directed**：独立的视觉导演方案，明确每镜头的起点、变化、终点及镜头间连接，不允许机械套用 PPT 卡片版式。\n- **Provenance**：每条 GIF 绑定完整提示词、声明的实际生成工具、导演分镜与风格指纹；重复素材须标记为有意复用。\n- **Verified**：技术 QA、contact sheet、视觉批准、源 GIF SHA256 均绑定，未过 QA 默认禁止合成。
+- **Directed**：独立的视觉导演方案，明确每镜头的起点、变化、终点及镜头间连接，不允许机械套用 PPT 卡片版式。
+- **Provenance**：每条 GIF 绑定完整提示词、声明的实际生成工具、导演分镜与风格指纹；重复素材须标记为有意复用。
+- **Verified**：技术 QA、contact sheet、视觉批准、源 GIF SHA256 均绑定，未过 QA 默认禁止合成。
 - **Resumable**：每个镜头独立生产，状态脚本列出需要补做的镜头。
 - **Hybrid accuracy**：精确文字和数据后期绘制，GIF 负责创意运动。
 
@@ -24,17 +27,22 @@ bash ~/.agents/skills/gif-studio/scripts/check_setup.sh
 
 ## 流程
 
-1. 先写完整口播、审查叙事逻辑与自然口语，用户确认后锁定 script.json / voiceover.md。\n2. 再推荐视觉风格与分镜，将镜头口播与完整原稿逐字核对。\n3. 编写导演方案 director-plan.json：可见因果变化、构图、前后镜连接、素材来源策略。
+1. 先写完整口播、审查叙事逻辑与自然口语，用户确认后锁定 script.json / voiceover.md。
+2. 再推荐视觉风格与分镜，将镜头口播与完整原稿逐字核对。
+3. 编写导演方案 director-plan.json：可见因果变化、构图、前后镜连接、素材来源策略。
 4. 生成关键静帧（工具支持时），再使用 GPT GIF 生成对应动画。
 5. GIF 技术检查+关键帧接触表，视觉审核后记录 SHA 绑定的批准文件。
 6. 已通过 QA 的素材合成视频，支持外部配音、字幕、成片核验。
 
 ## 从素材到成片
 
-将确认分镜保存为 `project/storyboard.json`，GIF 保存到 `project/gifs/shot-01.gif` 等。
+先保存确认后的 `project/script.json` 与完整口播，再保存 `project/storyboard.json`、`project/style-lock.json` 和 `project/director-plan.json`。每镜头保存独立的实际素材与原始生成提示词到 `project/gifs/` 和 `project/prompts/`。
 
 ```bash
-python3 scripts/audit_script.py --script project/script.json --voiceover project/voiceover.md --report project/script-audit.json\npython3 scripts/validate_storyboard.py --storyboard project/storyboard.json\npython3 scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json\npython3 scripts/audit_script.py --script project/script.json --storyboard project/storyboard.json
+python3 scripts/audit_script.py --script project/script.json --voiceover project/voiceover.md --report project/script-audit.json
+python3 scripts/validate_storyboard.py --storyboard project/storyboard.json
+python3 scripts/director_plan.py --director project/director-plan.json --storyboard project/storyboard.json
+python3 scripts/audit_script.py --script project/script.json --storyboard project/storyboard.json
 python3 scripts/register_asset.py --project project --storyboard project/storyboard.json --shot shot-01 --kind gpt_gif --tool ACTUAL_TOOL --reference ACTUAL_REFERENCE --prompt project/prompts/shot-01.txt
 python3 scripts/inspect_gif.py --gif project/gifs/shot-01.gif --duration 5 --report project/qa/shot-01.json --contact-sheet project/qa/shot-01-sheet.jpg
 # 真实审阅接触表与动画后才能审批（不可自动伪造通过）：
@@ -49,13 +57,18 @@ python3 scripts/compose_video.py --project project --storyboard project/storyboa
 
 ## 参考
 
-- [主 Skill](SKILL.md)\n- [视觉导演协议](references/visual-storytelling.md) 与 [生产操作手册](docs/production-pipeline.md)\n- [连贯口播写作规范](references/narrative-writing.md) 与 [口播声线](references/voice-profiles.md)
+- [主 Skill](SKILL.md)
+- [视觉导演协议](references/visual-storytelling.md) 与 [生产操作手册](docs/production-pipeline.md)
+- [连贯口播写作规范](references/narrative-writing.md) 与 [口播声线](references/voice-profiles.md)
 - [多风格目录](presets/styles.json) 与 [导演指南](references/style-guide.md)
 - [提示词模板](references/prompt-templates.md)
 - [异常排查](docs/troubleshooting.md)
 - [两个示例分镜](examples/)
 
 ## 测试
+
+本仓库**不再把上一轮三条失败的模板视频当作成功样片**。它们暴露的“单个 GIF 假充多个镜头、无配音冒充口播成片、固定 PPT 布局”已转化为审查与测试用例。真正可展示的样片需完成 GPT GIF 逐镜生成、真实配音与人工视觉验收；这部分尚未完成。
+
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -65,6 +78,8 @@ GitHub CI 在 Python 3.10–3.12 下运行合成素材烟雾测试；不能代�
 
 ## 边界
 
-现有生产来源登记是执行者的声明，不是外部模型调用的密码学证明。禁止伪造模型产物或自报视觉 QA 通过。\n\n系统不保证 GIF 生成能力已向任何特定 Codex 账号开放；不含自动语音识别/配音服务；视觉审核需实际读取接触表；准确公式和统计图需额外确定性渲染；配音长短与分镜不一致时最终按视频长度截断或填静音，须人工核对。
+现有生产来源登记是执行者的声明，不是外部模型调用的密码学证明。禁止伪造模型产物或自报视觉 QA 通过。
+
+系统不保证 GIF 生成能力已向任何特定 Codex 账号开放；不含自动语音识别/配音服务；视觉审核需实际读取接触表；准确公式和统计图需额外确定性渲染；配音长短与分镜不一致时最终按视频长度截断或填静音，须人工核对。
 
 MIT License.

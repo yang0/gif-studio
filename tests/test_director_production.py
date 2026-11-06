@@ -164,7 +164,7 @@ class DirectorProductionTests(unittest.TestCase):
             subprocess.run(cmd,check=True)
             report=json.loads((root/"build/delivery-report.json").read_text(encoding="utf-8"))
             self.assertTrue(report["qa_enforced"])
-            self.assertEqual("qa_reviewed",report["delivery_class"])
+            self.assertEqual("qa_reviewed_silent_preview",report["delivery_class"])
 
 if __name__=="__main__":
     unittest.main()

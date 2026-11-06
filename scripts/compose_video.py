@@ -103,7 +103,8 @@ def compose(project, storyboard, out, audio=None, burn=False,
     (project/"build"/"delivery-report.json").write_text(
         json.dumps({"video": str(out), "duration_sec": actual,
                     "expected_duration_sec": total, "width": width, "height": height,
-                    "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed, "delivery_class": "unreviewed_preview" if allow_unreviewed else "qa_reviewed"},
+                    "fps": fps, "audio": bool(audio), "qa_enforced": not allow_unreviewed,
+                    "delivery_class": "unreviewed_preview" if allow_unreviewed else ("qa_reviewed_narrated" if audio else "qa_reviewed_silent_preview")},
                    ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     return out
 
