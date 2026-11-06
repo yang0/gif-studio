@@ -34,6 +34,14 @@ def validate_director(plan, storyboard):
         policy = shot.get("asset_policy")
         if policy not in POLICIES:
             issues.append(f"{sid}: unknown asset_policy {policy}")
+        if policy == "new_gpt_gif":
+            must = shot.get("must_show")
+            avoid = shot.get("must_not_show")
+            if not isinstance(must, list) or len(must) < 2 or any(
+                    not isinstance(v, str) or not v.strip() for v in must):
+                issues.append(f"{sid}: new_gpt_gif needs >=2 concrete must_show elements/events")
+            if not isinstance(avoid, list) or any(not isinstance(v,str) for v in avoid):
+                issues.append(f"{sid}: must_not_show must be explicit list")
         if policy == "intentional_reuse":
             if not shot.get("reuse_source_id") or not shot.get("reuse_justification"):
                 issues.append(f"{sid}: intentional reuse requires source ID and justification")

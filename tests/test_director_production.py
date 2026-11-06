@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"scripts"))
 from approve_shot import approve
 from director_plan import validate_director
+from build_gif_prompts import compile_project,build_prompt
+from review_gif_attempt import reject
 from inspect_gif import inspect
 from production_contract import asset_status, production_preflight, register
 from qa_gate import shot_quality
@@ -49,7 +51,9 @@ def make_project(root, count=2):
             "composition":f"第{i+1}镜采取特定景别和主体构图",
             "entry_transition":"承接上一段的因果",
             "exit_transition":"自然交给下一段的动作",
-            "asset_policy":"new_gpt_gif"
+            "asset_policy":"new_gpt_gif",
+            "must_show":[f"具体第{i+1}个知识事件中的人物",f"第{i+1}个因果变化必须发生"],
+            "must_not_show":["无关的大脑和灯泡图标"]
         })
         colors = ("#eac250","#d75346","#3f769e","#23644d") if i==0 else (
                   "#a753bb","#556fa2","#e67c3e","#2d9147")
@@ -75,6 +79,51 @@ def register_and_review(root, board):
                 board,FLAGS)
 
 class DirectorProductionTests(unittest.TestCase):
+    def test_prompt_compiler_is_shot_specific(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            board,plan=make_project(root)
+            paths=compile_project(root,root/"storyboard.json")
+            self.assertEqual(2,len(paths))
+            a=Path(paths["shot-01"]).read_text(encoding="utf-8")
+            b=Path(paths["shot-02"]).read_text(encoding="utf-8")
+            self.assertNotEqual(a,b)
+            self.assertIn("第1个因果变化必须发生",a)
+            self.assertIn("无关的大脑和灯泡",a)
+            self.assertIn("hand-drawn",a)
+            self.assertIn("第2个因果变化必须发生",b)
+
+    def test_failed_gif_gets_one_focused_retry_then_blocks(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            board,_=make_project(root,1)
+            compile_project(root,root/"storyboard.json")
+            result=reject(root,"shot-01","generic_symbols",
+                          "画面只有大脑和灯泡，并没有描述的具体因果行为",
+                          "actual reviewer",root/"storyboard.json")
+            self.assertEqual("retry_ready",result["status"])
+            retry=(root/"prompts/shot-01.retry-2.txt").read_text(encoding="utf-8")
+            self.assertIn("画面只有大脑和灯泡",retry)
+            self.assertEqual("rejected",shot_quality(root,"shot-01",board)[0])
+            with self.assertRaisesRegex(ValueError,"same failed GIF"):
+                reject(root,"shot-01","wrong_subject",
+                       "画面不包含叙事需要的主要角色与事件",
+                       "actual reviewer",root/"storyboard.json")
+            make_gif(root/"gifs/shot-01.gif",("#123456","#654321","#abcdef","#fedcba"))
+            result=reject(root,"shot-01","wrong_action",
+                          "新的 GIF 仍然没有把开始状态连接到结束状态",
+                          "actual reviewer",root/"storyboard.json")
+            self.assertEqual("blocked_replan",result["status"])
+            self.assertEqual("blocked_replan",shot_quality(root,"shot-01",board)[0])
+
+    def test_compile_rejects_ambiguous_director(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            board,plan=make_project(root,1)
+            plan["shots"][0]["must_show"]=[]
+            problems,_=validate_director(plan,board)
+            self.assertTrue(any("must_show" in x for x in problems))
+
     def test_complete_production_contract(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)

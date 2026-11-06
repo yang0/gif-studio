@@ -13,7 +13,15 @@
       "composition": "中近景主体占画面大半，信息环绕中心",
       "entry_transition": "以提出问题的视觉事件开场",
       "exit_transition": "保留选项形状交给下一镜",
-      "asset_policy": "new_gpt_gif"
+      "asset_policy": "new_gpt_gif",
+      "must_show": [
+        "画面中出现与AI时代知识获取更容易直接相关的具体主体",
+        "必须清楚展示几张代表信息来源的卡片先后出现并形成可比较的答案，观众能看出答案获取变得方便"
+      ],
+      "must_not_show": [
+        "无关漂浮的大脑或灯泡符号",
+        "固定PPT卡片构图"
+      ]
     },
     {
       "id": "shot-02",
@@ -26,7 +34,15 @@
       "composition": "左右对比镜头，动态限制条件进入并改变选择",
       "entry_transition": "从上一镜的选项直接衔接",
       "exit_transition": "在最终选择上定格",
-      "asset_policy": "new_gpt_gif"
+      "asset_policy": "new_gpt_gif",
+      "must_show": [
+        "画面中出现与判断方案是否适合当前情境直接相关的具体主体",
+        "必须清楚展示现实限制从画面侧面进入，三个选项对条件的反应不同，最后只留一个符合条件的答案"
+      ],
+      "must_not_show": [
+        "无关漂浮的大脑或灯泡符号",
+        "固定PPT卡片构图"
+      ]
     }
   ]
 }
