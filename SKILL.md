@@ -23,7 +23,7 @@ description: 将知识口播、文章或概念拆成分镜，使用 Codex 当前
 
 输入：文稿、目标受众、目标时长、可选风格、可选配音。
 
-输出：`storyboard.json`，每镜头 3–6 秒（超出可明确标记）；字段见 `templates/storyboard.json`。每镜头必须明确：
+输出：`storyboard.json`，每镜头 3–6 秒（超出可明确标记）；字段见 `templates/storyboard.json`。保存后必须运行 `python3 <skill_dir>/scripts/validate_storyboard.py --storyboard <project>/storyboard.json`，修复所有错误后才能继续。每镜头必须明确：
 - 单一知识目标、对应口播、可供外置字幕使用的短句
 - 模式：`visual_metaphor` / `structure_relation` / `mechanism_breakdown` / `compare_contrast` / `data_motion`
 - 3–6 个关键物件（数据图允许更少）、明确动作顺序、时长和色彩
@@ -58,7 +58,7 @@ description: 将知识口播、文章或概念拆成分镜，使用 Codex 当前
 python3 <skill_dir>/scripts/inspect_gif.py --gif <project>/gifs/<id>.gif --report <project>/qa/<id>.json --duration <duration_sec>
 ```
 
-技术不通过时重试一次。视觉 QA：首帧是否空场、中段是否按序构建、末帧是否可读、无文字伪影/主体闪烁、循环处是否显著跳变。只凭脚本通过不代表视觉通过。
+技术不通过时重试一次；如仅出现 warnings，应结合人工/视觉模型逐帧判断是否允许继续。批量制作遇到失败镜头只重做该镜头，不覆盖已经通过的 GIF。视觉 QA：首帧是否空场、中段是否按序构建、末帧是否可读、无文字伪影/主体闪烁、循环处是否显著跳变。只凭脚本通过不代表视觉通过。
 
 ## Gate 4 合成
 
@@ -79,4 +79,4 @@ python3 <skill_dir>/scripts/compose_video.py --project <project> --storyboard <p
 
 ## 目录与参考
 
-`references/prompt-templates.md` 提示词、`references/quality-checklist.md` 质量规则、`templates/storyboard.json` 结构、`examples/ai-judgment/` 示例。
+`references/prompt-templates.md` 提示词、`references/quality-checklist.md` 质量规则、`templates/storyboard.schema.json` 字段约束、`templates/visual-spec.json` 终帧视觉规格、`examples/ai-judgment/` 与 `examples/compound-interest/` 示例、`docs/troubleshooting.md` 排障、`docs/release-checklist.md` 发布清单。
