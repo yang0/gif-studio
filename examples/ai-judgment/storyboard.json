@@ -1,0 +1,56 @@
+{
+  "project_title": "AI 时代的判断力",
+  "width": 720,
+  "height": 1280,
+  "fps": 24,
+  "shots": [
+    {
+      "id": "shot-01",
+      "duration_sec": 5,
+      "narration": "AI 时代，知识的获取成本越来越低。",
+      "subtitle": "知识的获取成本越来越低",
+      "visual_goal": "知识供给增长",
+      "visual_mode": "visual_metaphor",
+      "background": "#E8B83D",
+      "accent_colors": [
+        "#111111",
+        "#F5EEE0"
+      ],
+      "key_objects": [
+        "books",
+        "paper cards",
+        "stack"
+      ],
+      "motion_plan": [
+        "blank yellow paper",
+        "books slide in",
+        "cards stack",
+        "hold"
+      ]
+    },
+    {
+      "id": "shot-02",
+      "duration_sec": 5,
+      "narration": "但真正稀缺的，是从海量信息里做出正确判断。",
+      "subtitle": "真正稀缺的是判断力",
+      "visual_goal": "大量选项里识别有价值答案",
+      "visual_mode": "compare_contrast",
+      "background": "#247B69",
+      "accent_colors": [
+        "#F3EFE5",
+        "#E45A38"
+      ],
+      "key_objects": [
+        "grey cards",
+        "single highlighted card",
+        "hand"
+      ],
+      "motion_plan": [
+        "blank green paper",
+        "cards enter",
+        "hand selects one card",
+        "hold"
+      ]
+    }
+  ]
+}

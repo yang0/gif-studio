@@ -1,0 +1,4 @@
+interface:
+  display_name: "Knowledge GIF Studio"
+  short_description: "用 GPT GIF 为知识口播生成分镜动画并合成视频"
+  default_prompt: "使用 $knowledge-gif-studio 将这段知识口播拆分为视觉分镜，确认后制作 GIF 并合成 MP4。"
