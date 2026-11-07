@@ -212,9 +212,28 @@ def render(project,plan,script,timeline,visual,audio,storyboard,
         source=inside(root,clip["source_file"])
         duration=clip["duration_frames"]/fps
         start=clip["source_in_ms"]/1000
-        target=work/(clip["id"]+"-"+clip["source_sha256"][:12]+".mp4")
+        # Clip cache is content-addressed by all actual render parameters:
+        # an untouched shot can be reused after a different shot is reworked.
+        key=sha256_json({"clip":clip,"fps":fps,"width":w,"height":h,
+                         "pipeline":"mixed-v31-cache-v1"})
+        target=work/(key+".mp4")
+        receipt=work/(key+".json")
+        reusable=False
+        if target.is_file() and receipt.is_file():
+            try:
+                proof=json.loads(receipt.read_text(encoding="utf-8"))
+                reusable=(proof.get("render_key")==key and
+                          proof.get("video_sha256")==sha256(target) and
+                          proof.get("duration_frames")==clip["duration_frames"])
+            except (ValueError,OSError):
+                reusable=False
+        if reusable:
+            clips.append(target)
+            continue
         if target.exists():
             target.unlink()
+        if receipt.exists():
+            receipt.unlink()
         typ=clip["media_type"]
         cmd=["ffmpeg","-hide_banner","-loglevel","error","-y"]
         if typ=="screenshot":
@@ -245,6 +264,9 @@ def render(project,plan,script,timeline,visual,audio,storyboard,
             "-of","default=noprint_wrappers=1:nokey=1",str(target)],text=True).strip()
         if int(counted)!=clip["duration_frames"]:
             raise ValueError(f"{clip['id']}: rendered {counted} frames, expected {clip['duration_frames']}; no filler permitted")
+        receipt.write_text(json.dumps({"render_key":key,"video_sha256":sha256(target),
+                                       "duration_frames":clip["duration_frames"]},
+                                       indent=2)+"\n",encoding="utf-8")
         clips.append(target)
     concat=root/"build"/"video-preview"/"concat.txt"
     concat.write_text("".join("file '"+str(x.resolve()).replace("'","'\\''")+"'\n" for x in clips),encoding="utf-8")
