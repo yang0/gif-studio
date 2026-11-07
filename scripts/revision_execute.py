@@ -30,7 +30,28 @@ def create(project,revision,findings,critic,original_video,original_plan,replace
         raise ValueError("Narration/timecode defect needs new real full-track audio and alignment; cannot reuse old timeline")
     if revision["status"]!="PLANNED_NOT_EXECUTED":
         raise ValueError("Only verified unexecuted revision plans can be applied")
-    visual=read(source/"visual-plan.json")
+    original_visual=read(source/"visual-plan.json")
+    proposed=replacements.get("revised_visual_plan")
+    visual=json.loads(json.dumps(proposed if proposed is not None else original_visual))
+    if proposed is not None:
+        from visual_plan import validate as validate_visual
+        previous={x["id"]:x for x in original_visual["shots"]}
+        if set(x["id"] for x in visual.get("shots",[]))!=set(previous) or len(visual["shots"])!=len(original_visual["shots"]):
+            raise ValueError("Re-cut cannot silently remove or duplicate existing source shot IDs")
+        problems=validate_visual(visual,read(source/"audio-timeline.json"),
+                                 read(source/"script.json"),source/"audio"/"voiceover.wav")
+        if problems:
+            raise ValueError("Re-cut not aligned to real narration: "+"; ".join(problems))
+        for shot in visual["shots"]:
+            old=previous[shot["id"]]
+            if shot["id"] not in affected:
+                for field in ("source_file","source_sha256","source_shot_id","candidate_id","media_type"):
+                    if shot.get(field)!=old.get(field):
+                        raise ValueError("Re-cut changed an unaffected source without a registered replacement")
+        if "visual_plan" not in revision["invalidate"]:
+            raise ValueError("Revision plan does not authorize changing the real visual timeline")
+    elif not affected and "visual_plan" in revision["invalidate"]:
+        raise ValueError("Structural rework requires an explicitly revised, real-audio-aligned visual plan")
     by_id={x["id"]:x for x in visual["shots"]}
     for sid,entry in items.items():
         if sid not in by_id or not isinstance(entry,dict):
