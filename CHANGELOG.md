@@ -1,10 +1,9 @@
 # Changelog
 
-## [3.0.0-dev.4] - 2026-11-07
-- Added optional local ChatGPT2API-DSH GIF backend, using existing account-pool credentials via environment variables and native GIF b64_json.
-- Refuses unsupported image-reference GIF requests; locks endpoint to loopback HTTP and rejects static bytes posing as GIF.
-- Added HTTP loopback fixture tests for real request/response handling, capability rejection, and candidate ingestion.
-- Live GPT GIF visual quality and real account access are not established by CI.
+## [3.0.0-dev.5] - 2026-11-07
+- Removed DSH account-pool integration and its documentation/tests: gif-studio is a standalone video-production skill, independent of any account pool or image provider.
+- Retained optional provider-neutral candidate ingestion and video-editing tools; video delivery, voice alignment, A/B-roll direction and visual QA remain the product focus.
+
 
 ## [3.0.0-dev.3] - 2026-11-07
 - Added `gif_batch.py` for concurrent real executable GIF backend calls with explicit literal prompts and source image attachment metadata.

@@ -64,13 +64,7 @@ python3 scripts/production_run.py --project project --until sequence
 
 这仍是“音频 → 已有视觉素材 → 剪辑草稿”的同步执行器；**不具备从主题全自动生成最终高质量视频的能力**，实际生成 GPT GIF 与整片视觉审阅仍需通过真实工具完成。
 
-### v3.0 · 使用你现有的 DSH 本地号池（可选）
-
-新增 `scripts/backends/dsh_pool_gif.py`，可以直接请求 [yang0/chatgpt2api-dsh](https://github.com/yang0/chatgpt2api-dsh) 的本地原生 GIF 接口，继续使用现有账号池，无需额外购买 OpenAI API 或视频模型额度。配置与 Windows 示例见 [DSH 本地 GIF 后端](references/dsh-local-gif.md)。
-
-该号池 GIF 模式目前**不能传参考图片**；要求角色三视图的 A-roll 候选会被明确阻断。模型实际返回的 GIF 仍需逐候选审片，不能因为 HTTP 成功就宣布视频合格。
-
-### v3.0 · 多候选真实 GIF 调度
+### v3.0 · 多候选素材准备（可选）
 
 先准备不同的逐镜提示词与可用的原始角色参考图，然后按 [GIF 生成后端协议](references/gif-generator-runtime.md) 配置已连接实际生成工具的可信后端。**本仓库不附带一个能凭空调用 Codex GIF 额度的命令**；工具不具备 GIF 生成功能时，调度器必须失败，而不是生成矢量动画或虚报成功。
 
