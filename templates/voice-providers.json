@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "tts": {
+    "name": "REPLACE_WITH_ACTUAL_TTS",
+    "timeout_seconds": 600,
+    "argv": [
+      "python",
+      "-m",
+      "your_real_tts_adapter",
+      "--text-file",
+      "{text_file}",
+      "--audio-out",
+      "{audio_out}"
+    ]
+  },
+  "alignment": {
+    "name": "REPLACE_WITH_REAL_ALIGNER",
+    "timeout_seconds": 600,
+    "argv": [
+      "python",
+      "-m",
+      "your_real_forced_aligner_adapter",
+      "--audio",
+      "{audio_file}",
+      "--text-file",
+      "{text_file}",
+      "--timeline-out",
+      "{timeline_out}"
+    ]
+  }
+}
