@@ -205,6 +205,12 @@ class MixedMediaEditorTests(unittest.TestCase):
         self.assertTrue(formal.is_file())
         self.assertNotEqual(formal,movie)
         inspect_final(self.root,formal,frames=3)
+        # A legacy GIF-only EDL may coexist in an audio-first project.
+        (self.root/"sequence.json").write_text('{"version":2}',encoding="utf-8")
+        signed=approve_final(self.root,formal,"fixture reviewer",
+            "Observed full synthetic test video and all placeholder tracks; CI does not prove quality",
+            {key:True for key in ("semantic","pacing","continuity","subtitles","audio")})
+        self.assertEqual("release_approved",signed["status"])
         # Touch the existing screenshot: the recorded director and video
         # approval must no longer be usable.
         Image.new("RGB",(320,240),"purple").save(self.still)
