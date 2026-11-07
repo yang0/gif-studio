@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "audio_sha256": "COPY_FROM_AUDIO_TIMELINE",
+  "timeline_sha256": "HASH_OF_EXACT_AUDIO_TIMELINE_JSON",
+  "shots": [
+    {
+      "id": "v001",
+      "start_ms": 400,
+      "end_ms": 3500,
+      "audio_segment_ids": [
+        "s001"
+      ],
+      "roll": "A",
+      "role": "character_action",
+      "media_type": "gpt_gif",
+      "visual_event": "角色在具体场景提出问题",
+      "cut_reason": "提问阶段建立人物与情绪"
+    },
+    {
+      "id": "v002",
+      "start_ms": 3500,
+      "end_ms": 7800,
+      "audio_segment_ids": [
+        "s002"
+      ],
+      "roll": "B",
+      "role": "mechanism",
+      "media_type": "gpt_gif",
+      "visual_event": "可见的真实因果变化",
+      "cut_reason": "转向解释机制"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": {
+    "method": "manual_verified",
+    "tool_or_reviewer": "REPLACE_WITH_ACTUAL_REVIEWER"
+  },
+  "audio_sha256": "REPLACE_WITH_REAL_SHA256",
+  "duration_ms": 8000,
+  "segments": [
+    {
+      "id": "s001",
+      "start_ms": 400,
+      "end_ms": 3500,
+      "text": "第一句完整原文"
+    },
+    {
+      "id": "s002",
+      "start_ms": 3600,
+      "end_ms": 7800,
+      "text": "第二句完整原文"
+    }
+  ]
+}
