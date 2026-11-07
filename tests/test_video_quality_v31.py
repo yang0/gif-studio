@@ -83,6 +83,8 @@ class CriticAndRevisionTests(unittest.TestCase):
             with self.subTest(patch=patch):
                 plan=copy.deepcopy(self.plan)
                 plan["clips"][0].update(patch)
+                if patch.get("duration_frames")==1000:
+                    plan["clips"][1]["start_frame"]=1000
                 with self.assertRaisesRegex(ValueError,message):
                     inspect(self.video,plan)
         plan=copy.deepcopy(self.plan)
