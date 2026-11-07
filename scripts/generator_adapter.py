@@ -12,11 +12,12 @@ from pathlib import Path
 
 from audio_timeline import sha256
 from reference_pack import validate as validate_references
-from candidate_pool import add as add_candidate
+from candidate_pool import add as add_candidate, safe as safe_id
 from verify_gif_asset import validate as validate_gif
 
 def request(project,shot,candidate,prompt,reference_pack=None):
     root=Path(project).resolve()
+    safe_id(shot);safe_id(candidate)
     path=Path(prompt).resolve()
     if not path.is_file() or not path.read_text(encoding="utf-8").strip():
         raise ValueError("Exact nonempty generation prompt required")
@@ -46,6 +47,7 @@ def request(project,shot,candidate,prompt,reference_pack=None):
 
 def ingest(project,shot,candidate,gif,receipt,notes):
     root=Path(project).resolve()
+    safe_id(shot);safe_id(candidate)
     request_path=root/"production"/"requests"/shot/(candidate+".json")
     if not request_path.is_file():
         raise FileNotFoundError("No prepared generation request")
