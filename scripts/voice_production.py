@@ -23,13 +23,13 @@ def make_audio(script, output, voice=DEFAULT_VOICE, rate="+0%"):
         raise ValueError("A real TTS voice must be specified")
     if not isinstance(rate,str) or len(rate)>10:
         raise ValueError("Invalid TTS rate")
+    dest=Path(output).resolve()
+    if dest.exists():
+        raise FileExistsError("Narration already exists; use a new version or remove explicitly")
     try:
         import edge_tts
     except ImportError as exc:
         raise RuntimeError("Optional dependency missing: pip install edge-tts") from exc
-    dest=Path(output).resolve()
-    if dest.exists():
-        raise FileExistsError("Narration already exists; use a new version or remove explicitly")
     dest.parent.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="gif-studio-voice-") as temp:
         mp3=Path(temp)/"whole-narration.mp3"
