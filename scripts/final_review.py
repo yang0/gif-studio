@@ -119,7 +119,7 @@ def approve(project, video, reviewer, notes, checks):
     director=root/"director-v2.json"
     if director.is_file():
         from visual_director import validate as validate_director
-        from video_critic import check_report
+        from video_critic import check_report,validate_human_review
         from visual_plan import sha256_json
         required=[root/"audio-timeline.json",root/"visual-plan.json",
                   root/"quality"/"critic.json",root/"quality"/"human-review.json"]
@@ -137,6 +137,9 @@ def approve(project, video, reviewer, notes, checks):
         plan=read(plan_path) if plan_path.is_file() else None
         check_report(critic,video,plan)
         human=read(root/"quality"/"human-review.json")
+        quality_issues=validate_human_review(human,critic)
+        if quality_issues:
+            raise ValueError("v3.1 human review invalid: "+"; ".join(quality_issues))
         if (human.get("video_sha256")!=info["sha256"] or
             human.get("technical_report_sha256")!=sha256_json(critic) or
             human.get("status")!="HUMAN_REVIEW_DECLARED" or
