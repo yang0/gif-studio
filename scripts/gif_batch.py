@@ -155,10 +155,6 @@ def execute_one(project, entry, command, caps, timeout, max_attempts):
         result={"key":key,"status":"blocked","error":"Registered source or current prompt/reference request differs; use a new candidate ID"}
         atomic_json(status,result)
         return result
-    try:
-        pass
-    except Exception:
-        raise
     if saved.get("input_sha256") and saved["input_sha256"]!=input_hash:
         result={"key":key,"status":"blocked","error":"Input changed since prior run; use a new candidate ID"}
         atomic_json(status,result)
