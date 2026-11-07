@@ -31,3 +31,18 @@ python3 scripts/visual_plan.py --plan project/visual-plan.json --timeline projec
 - A-roll 需要三视图、笔触和场景参考，可在后续 P0-4 落地。
 - B-roll 按知识结构挑选真实素材，准确数据使用可靠的可控叠加，不以矢量图冒充 GPT GIF。
 - 候选 GIF 多生成，剪辑时才按语义选片；样片验证通过后才大批量生产。
+
+## 将视觉编排转为可剪辑 GIF 时间线（第一版）
+
+明确为每条 `visual-plan.json.shots[]` 提供 `source_shot_id`、`candidate_id`，需要从 GIF 中部开始时提供 `source_in_ms`。素材必须已经真实生成并进入 `candidate_pool.py`。当前编译器只支持 `media_type=gpt_gif`；其他 B-roll 媒体类型拒绝伪装为 GIF，未来应交给独立的混合媒体渲染器。
+
+```bash
+python3 scripts/visual_to_sequence.py --project project \
+ --script project/script.json --audio project/audio/voiceover.wav \
+ --timeline project/audio-timeline.json --visual-plan project/visual-plan.json \
+ --storyboard project/storyboard.json
+python3 scripts/sequence_cut.py --project project --storyboard project/storyboard.json --verify
+python3 scripts/sequence_cut.py --project project --preview --audio project/audio/voiceover.wav
+```
+
+编译器将毫秒音频区间按输出 FPS 转成镜头起止帧；真实 GIF 必须覆盖需要的时长，不能自动末帧定格或重复。产生的 EDL 仍是 `draft`，不等于审片通过。修改原始声音/视觉编排后，已生成的 v3 EDL 必须被重新验证并按需重建，禁止沿用旧审批。

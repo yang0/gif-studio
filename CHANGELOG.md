@@ -5,7 +5,8 @@
 - Added project_flow.py for project manifest, stage diagnostics and missing/stale resource reporting (not a full automated producer).
 - Added reference-pack fingerprint validation (character front/side/back/stroke/scene) and actual GIF-generator handoff/ingest adapter; no fabricated model calls.
 - Added regression tests for invalid alignment, narration mismatch, visual gaps, reference mutation and generation receipts.
-- Full TTS, actual forced aligner, audio-to-EDL execution and release-quality sample remain open.
+- Added audio-timed `visual_to_sequence.py` compiler from verified real GIF candidates into legacy frame-accurate EDL, with stale revision checks.
+- Full TTS, actual forced aligner, mixed-media renderer and release-quality sample remain open.
 
 ## [2.3.0-candidate-release-alpha] - 2026-11-07
 - Added independent per-candidate GIF technical/visual approval records, including contact-sheet and source provenance.

@@ -20,9 +20,11 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 真实配音必须整段生成或导入，不能拿单元测试用的音轨充数。使用 `scripts/audio_timeline.py` 校验来自实际 forced aligner 或人工逐句核对的 `audio-timeline.json`；禁止编造时间码。再使用 `scripts/visual_plan.py` 校验 `visual-plan.json`，根据真实时间码决定情景/人物 A-roll 与知识/原理 B-roll 的视觉职责、镜头长度及转场理由。
 
+每个视觉片段选好真实 GPT GIF 候选后，运行 `scripts/visual_to_sequence.py --project project --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --visual-plan project/visual-plan.json --storyboard project/storyboard.json`。它会以毫秒时间码直接生成已有 `sequence.json v2` 格式的**未审核**帧级镜头计划，禁止按字数猜镜头秒数；若真实 GIF 无法覆盖所需时间，必须准备更多素材，而不是自动冻结。随后仍按旧版候选审核、预览和正式交付门禁执行。
+
 A-roll 多镜头需要真实参考包：三视图（正/侧/背）、笔触局部和场景图。使用 `reference_pack.py` 核对实际图像哈希和分辨率。Codex GIF 生成接口必须遵循 `generator_adapter.py` 的准备/入库协议：显式记录每条完整 prompt、参考包、真实工具调用/回执、生成 GIF，并让候选进独立素材库。**工具回执只是来源记录，不代表自动认证，也不能绕过视觉审核。** 不要声称此 Python 脚本本身会生成 GIF。
 
-目前这条 v3 路线只完成**数据契约与校验/入库衔接**，真正的整段 TTS、强制声学对齐实现、自由剪辑直接由 visual-plan 驱动及高质量真实样片仍属于 Issue #1 后续工作；不能宣称 v3 已全部交付。
+目前这条 v3 路线只完成**数据契约与校验/入库衔接**，真正的整段 TTS、强制声学对齐实现、混合媒体 B-roll 渲染及高质量真实样片仍属于 Issue #1 后续工作；已提供从已审时间码与真实 GPT GIF 候选生成草稿 EDL 的工具；不能宣称 v3 已全部交付。
 
 ## 运行前提
 

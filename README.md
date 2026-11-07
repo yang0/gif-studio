@@ -13,6 +13,7 @@
 - `scripts/project_flow.py`：统一项目清单和阶段 `init/status/plan/validate`，是只读诊断/依赖检查，而不是生成器。
 - `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。
 - `scripts/generator_adapter.py`：为真实 Codex GIF 生成准备完整提示词/参考包请求，并将实际输出与工具来源登记入候选池；不会自行发起虚构的 GPT API 请求。
+- `scripts/visual_to_sequence.py`：把绑定真实音轨的毫秒级视觉计划编译成现有 `sequence.json` 自由剪辑草案，要求真实素材覆盖时长。
 
 ```bash
 python3 scripts/project_flow.py init --project project
@@ -28,7 +29,13 @@ python3 scripts/generator_adapter.py --project project --prepare --shot shot-01 
 python3 scripts/generator_adapter.py --project project --ingest --shot shot-01 --candidate take-a --gif /actual/generated.gif --receipt /actual/receipt.json --notes "具体素材观察"
 ```
 
-此流程不会将音轨时长按字数均摊伪装“声学对齐”，也不会把任意 GIF 注册为自动视觉通过。**v3 完整真实样片、音频生成/对齐与统一自动执行器仍未完成**，见 Issue #1。
+将候选 GIF 与 A/B-roll 视觉计划中的 `source_shot_id`、`candidate_id` 关联后，可以使用：
+
+```bash
+python3 scripts/visual_to_sequence.py --project project --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --visual-plan project/visual-plan.json --storyboard project/storyboard.json
+```
+
+该命令生成待导演审阅的 v2 EDL；如果素材不够长或没有对应候选，它会报错而非自动凑时长。混合媒体 B-roll 引擎尚未落地。此流程不会将音轨时长按字数均摊伪装“声学对齐”，也不会把任意 GIF 注册为自动视觉通过。**v3 完整真实样片、音频生成/对齐与统一自动执行器仍未完成**，见 Issue #1。
 
 ## 核心规则：GPT GIF ONLY
 
