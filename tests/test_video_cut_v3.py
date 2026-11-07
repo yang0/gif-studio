@@ -201,14 +201,17 @@ class MixedMediaEditorTests(unittest.TestCase):
                        self.board,srt,movie)
         self.assertEqual("PENDING_FINAL_VIDEO_REVIEW",report["status"])
         self.assertEqual(3,len(report["shots"]))
-        inspect_final(self.root,movie,frames=3)
+        formal=self.root/"build"/"formal-mixed"/"final.mp4"
+        self.assertTrue(formal.is_file())
+        self.assertNotEqual(formal,movie)
+        inspect_final(self.root,formal,frames=3)
         # Touch the existing screenshot: the recorded director and video
         # approval must no longer be usable.
         Image.new("RGB",(320,240),"purple").save(self.still)
         with self.assertRaisesRegex(ValueError,"source changed"):
-            verify_release(self.root,movie)
+            verify_release(self.root,formal)
         with self.assertRaises(ValueError):
-            approve_final(self.root,movie,"fixture reviewer",
+            approve_final(self.root,formal,"fixture reviewer",
                           "Reviewed complete synthetic preview, not a publishable film",
                           {key:True for key in
                            ("semantic","pacing","continuity","subtitles","audio")})
