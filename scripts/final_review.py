@@ -85,6 +85,19 @@ def approve(project, video, reviewer, notes, checks):
             raise ValueError("Formal release provenance differs from reviewed video")
         from candidate_review import paths as candidate_review_paths
         from edit_plan import stable_digest
+        for source_field,hash_field in (
+            ("storyboard_source","storyboard_sha256"),
+            ("audio_source","audio_sha256"),
+            ("subtitles_source","subtitles_sha256"),
+        ):
+            source_file=provenance.get(source_field)
+            if not source_file or not Path(source_file).is_file() or sha256(source_file)!=provenance.get(hash_field):
+                raise ValueError(source_field+" changed or missing since formal render")
+        sequence_file=provenance.get("sequence_source")
+        if not sequence_file or not Path(sequence_file).is_file():
+            raise ValueError("Formal sequence source missing since render")
+        if stable_digest(json.loads(Path(sequence_file).read_text(encoding="utf-8")))!=provenance.get("sequence_sha256"):
+            raise ValueError("Formal sequence changed since render")
         for source in provenance.get("sources",[]):
             approved=candidate_review_paths(root,source["shot"],source["candidate"])[1]
             if not approved.is_file() or sha256(approved)!=source["candidate_approval_sha256"]:
