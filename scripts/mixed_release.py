@@ -179,7 +179,7 @@ def main():
     a=p.parse_args()
     root=Path(a.project)
     if a.verify:
-        result=verify_release(root,a.preview or root/"build"/"mixed-preview.mp4")
+        result=verify_release(root,a.out or root/"build"/"formal-mixed"/"final.mp4")
     else:
         plan=load(root/"video-plan.json")
         if a.approve_shot:
