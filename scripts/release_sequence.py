@@ -45,6 +45,37 @@ def subtitle_issues(path,total_seconds):
         last_end=end
     return issues
 
+def v3_subtitle_provenance_issues(project, sequence, audio, subtitles):
+    """V3 release must use subtitles bound to the SAME aligned voice track."""
+    if not sequence.get("audio_timeline_sha256"):
+        return []  # Legacy v2 projects use their existing subtitle contract.
+    root=Path(project).resolve()
+    timeline=root/"audio-timeline.json"
+    script=root/"script.json"
+    proof=Path(str(subtitles)+".provenance.json")
+    missing=[str(p) for p in (timeline,script,proof) if not p.is_file()]
+    if missing:
+        return ["V3 aligned subtitle provenance missing: "+", ".join(missing)]
+    try:
+        from visual_plan import sha256_json
+        aligned=json.loads(timeline.read_text(encoding="utf-8"))
+        record=json.loads(proof.read_text(encoding="utf-8"))
+        expected={
+            "audio_timeline_sha256":sha256_json(aligned),
+            "audio_sha256":digest(audio),
+            "script_sha256":digest(script),
+            "srt_sha256":digest(subtitles),
+        }
+        errors=[]
+        for key,actual in expected.items():
+            if record.get(key)!=actual:
+                errors.append("V3 subtitle provenance mismatch: "+key)
+        if sequence.get("audio_timeline_sha256")!=expected["audio_timeline_sha256"]:
+            errors.append("V3 sequence aligned against a different audio timeline")
+        return errors
+    except (ValueError,OSError,KeyError,TypeError) as exc:
+        return ["Invalid V3 subtitle provenance: "+str(exc)]
+
 def preflight(project, storyboard, sequence, audio, subtitles):
     root=Path(project).resolve()
     issues=verify_sequence(root,sequence,audio,require_audio=True,storyboard=storyboard)
@@ -55,6 +86,8 @@ def preflight(project, storyboard, sequence, audio, subtitles):
     if not audio or not Path(audio).is_file():
         issues.append("Real narration audio file is mandatory")
     issues.extend(subtitle_issues(subtitles,sequence["total_frames"]/sequence["fps"]))
+    if audio and Path(audio).is_file() and subtitles and Path(subtitles).is_file():
+        issues.extend(v3_subtitle_provenance_issues(root,sequence,audio,subtitles))
     catalog=read_catalog(root)
     used=set()
     for clip in sequence["clips"]:
