@@ -112,15 +112,30 @@ def inspect(video,plan=None,subtitles=None):
                       "evidence":f"ffprobe width={info['width']} px"})
     clips=plan.get("clips",[]) if isinstance(plan,dict) else []
     fps=plan.get("fps") if isinstance(plan,dict) else None
-    if clips and (not isinstance(fps,int) or fps<=0):
-        raise ValueError("A clip plan must contain integer positive fps")
+    # Reject structurally invalid EDLs before expensive frame decoding.
+    # A gap, overlap or out-of-range frame otherwise creates misleading
+    # per-shot critic evidence that can later be attached to a release review.
+    if clips:
+        if type(fps)!=int or fps<=0:
+            raise ValueError("A clip plan must contain integer positive fps")
+        cursor=0
+        for index, clip in enumerate(clips):
+            if not isinstance(clip,dict):
+                raise ValueError(f"Clip {index+1} must be an object")
+            start=clip.get("start_frame")
+            count=clip.get("duration_frames")
+            if type(start)!=int or type(count)!=int or count<=0 or start<0:
+                raise ValueError(f"Invalid clip frame bounds at clip {index+1}")
+            if start!=cursor:
+                raise ValueError(f"Non-contiguous clip timeline at clip {index+1}: expected start_frame {cursor}, got {start}")
+            cursor=start+count
+        if cursor/fps>info["duration_s"]+.25:
+            raise ValueError("Clip timeline extends beyond actual decoded movie")
     observations=[]
     samples=[]
     for i,clip in enumerate(clips):
-        start=clip.get("start_frame")
-        count=clip.get("duration_frames")
-        if type(start)!=int or type(count)!=int or count<1:
-            raise ValueError("Invalid clip frame bounds")
+        start=clip["start_frame"]
+        count=clip["duration_frames"]
         duration=count/fps
         a=(start+.2*count)/fps
         b=(start+.8*count)/fps
