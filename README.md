@@ -58,9 +58,9 @@ python3 scripts/sequence_cut.py --project project --preview
 python3 scripts/review_workspace.py --project project --storyboard project/storyboard.json --sequence project/sequence.json
 ```
 
-剪辑 v2 使用的是真实候选 GIF 字节，不会画任何矢量替代素材。会检查原始 GIF 的 SHA256、所选时段不超过真实 GIF 时长、时间线无空隙重叠，以及切镜原因。旁白音轨长度不匹配会出警告，且不会悄悄截短音频冒充配音成功。输出明确标记为 **UNREVIEWED_SEQUENCE_PREVIEW**；正式发布端到端的候选审核仍在后续阶段。
+剪辑 v2 使用的是真实候选 GIF 字节，不会画任何矢量替代素材。会检查原始 GIF 的 SHA256、所选时段不超过真实 GIF 时长、时间线无空隙重叠，以及切镜原因。旁白音轨长度不匹配会出警告，且不会悄悄截短音频冒充配音成功。输出明确标记为 **UNREVIEWED_SEQUENCE_PREVIEW**；正式多镜头交付现由 candidate_review.py 和 release_sequence.py 完成独立候选审核、有声字幕合成；成片仍需 final_review.py 实际审片批准。
 
-详细操作：[可变镜头剪辑台](references/sequence-editing.md)。
+详细操作：[可变镜头剪辑台](references/sequence-editing.md) 与 [候选独立审核 + 正式成片流程](references/candidate-release.md)。
 
 ## v2 剪辑导演：GIF 不等于视频
 

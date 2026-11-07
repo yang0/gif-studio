@@ -103,7 +103,7 @@ python3 <skill_dir>/scripts/approve_shot.py --project project --storyboard proje
 
 完成素材池候选后，先运行 `scripts/sequence_cut.py --project project --storyboard project/storyboard.json --init`，再修改 `project/sequence.json` 中的 clips，调整镜头数量、候选和入/出点。运行 `scripts/sequence_cut.py --project project --verify` 严格核实帧级时间线、候选 SHA、原生 GIF 时长。运行 `scripts/sequence_cut.py --project project --preview` 只使用真实候选 GIF 输出 `build/sequence-preview.mp4`。再运行 `scripts/review_workspace.py --project project --storyboard project/storyboard.json --sequence project/sequence.json`，可在画廊里点击每条剪辑块跳转预览视频。
 
-**重要：sequence_cut v2 当前仅提供独立剪辑预览，不能将它的 UNREVIEWED_SEQUENCE_PREVIEW 当成正式视频。** 正式发布仍需完成候选级视觉质量审核、音画同步及最终成片复核。单镜一候选的老版路径保留兼容。不能通过简单重写状态绕过门禁。
+**正式多镜头交付**现已提供：参考 references/candidate-release.md，先为剪辑实际使用的每个 GIF 候选执行 candidate_review.py --inspect，真正观看完整动画后逐项 --approve；备用镜头不能借主镜的审核。看过完整草稿后填 sequence.status=approved 与审核说明。真实配音和 SRT 齐备后运行 release_sequence.py，输出仍只是 PENDING_FINAL_VIDEO_REVIEW；再次观看 MP4/试听后用 final_review.py --inspect 和 --approve 做最终验收。未完成这些流程，不能声称正式作品通过。单镜一候选的老版路径保留兼容。不能通过简单重写状态绕过门禁。
 
 ## Gate 4 — 音画合成与交付
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.0-candidate-release-alpha] - 2026-11-07
+- Added independent per-candidate GIF technical/visual approval records, including contact-sheet and source provenance.
+- Added formal multi-cut release requiring every used candidate approved, natural narration, timed SRT and director-approved EDL.
+- Formal output remains PENDING_FINAL_VIDEO_REVIEW until actual full-film review.
+- Final review binds candidate approval hashes and rendered MP4 provenance; candidate gallery displays independent QA state.
+
 ## [2.2.0-variable-sequence-alpha] - 2026-11-07
 - Added version 2 frame-accurate EDL with arbitrarily many real candidate clips per narration shot.
 - Each cut carries source/candidate IDs, immutable GIF hash, source in-frame, timeline in-frame, duration and editorial reason.
