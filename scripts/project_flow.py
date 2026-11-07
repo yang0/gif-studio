@@ -168,6 +168,45 @@ def state(root):
             entry("release","ready" if not issues else "blocked",issues)
         except (ValueError,OSError,KeyError,TypeError) as exc:
             entry("release","blocked",[str(exc)])
+    # Optional v3.1 quality pipeline activates only when director-v2.json
+    # exists; existing v3 projects can migrate without false auto-approvals.
+    director_file=root/"director-v2.json"
+    if director_file.is_file():
+        from visual_director import validate as director_validate
+        from video_critic import check_report,validate_human_review
+        try:
+            required=[loc["audio_timeline"],loc["visual_plan"]]
+            if not all(x.is_file() for x in required):
+                entry("visual_director_v2","blocked",["Source audio/visual plan missing"])
+            else:
+                director=json.loads(director_file.read_text(encoding="utf-8"))
+                timeline=json.loads(loc["audio_timeline"].read_text(encoding="utf-8"))
+                visual=json.loads(loc["visual_plan"].read_text(encoding="utf-8"))
+                issues=[x for x in director_validate(director,timeline,visual)
+                        if not x.endswith("(warning)")]
+                entry("visual_director_v2","ready" if not issues else "blocked",issues)
+        except (ValueError,TypeError,KeyError,OSError) as exc:
+            entry("visual_director_v2","blocked",[str(exc)])
+        critic_file=root/"quality"/"critic.json"
+        human_file=root/"quality"/"human-review.json"
+        if not critic_file.is_file() or not human_file.is_file():
+            entry("full_video_quality","missing",["Real MP4 critic evidence and independent human quality review required"])
+        else:
+            try:
+                report=json.loads(critic_file.read_text(encoding="utf-8"))
+                human=json.loads(human_file.read_text(encoding="utf-8"))
+                video=Path(report["video"]).resolve()
+                if root not in video.parents:
+                    raise ValueError("Critic video must be inside the project directory")
+                plan_path=root/"video-plan.json"
+                edit=json.loads(plan_path.read_text(encoding="utf-8")) if plan_path.is_file() else None
+                check_report(report,video,edit)
+                issues=validate_human_review(human,report)
+                if human.get("eligible_for_independent_final_review") is not True:
+                    issues.append("Actual creative full-video review did not pass")
+                entry("full_video_quality","ready" if not issues else "blocked",issues)
+            except (ValueError,TypeError,KeyError,OSError) as exc:
+                entry("full_video_quality","blocked",[str(exc)])
     return {"version":3,"project":str(root),"stages":stages,
             "ready_for_publication":False,
             "note":"All stage checks are technical. A release still requires actual final human review.",
