@@ -11,6 +11,7 @@ from audio_subtitles import build,generate,stamp
 from audio_timeline import sha256
 from visual_plan import sha256_json
 from release_sequence import v3_subtitle_provenance_issues
+from project_flow import init as init_project, state as project_state
 
 class AudioSubtitleTests(unittest.TestCase):
     def setUp(self):
@@ -70,6 +71,26 @@ class AudioSubtitleTests(unittest.TestCase):
         output.write_text("Modified captions",encoding="utf-8")
         issues=v3_subtitle_provenance_issues(self.root,sequence,self.audio,output)
         self.assertTrue(any("srt_sha256" in x for x in issues),issues)
+
+    def test_project_status_reports_aligned_subtitle_staleness(self):
+        init_project(self.root)
+        (self.root/"script.json").write_text(
+            self.script_path.read_text(encoding="utf-8"),encoding="utf-8")
+        (self.root/"audio"/"voiceover.wav").parent.mkdir(exist_ok=True)
+        import shutil
+        shutil.copyfile(self.audio,self.root/"audio"/"voiceover.wav")
+        # Alignment must belong to the project audio, not the source fixture.
+        timeline=json.loads(json.dumps(self.timeline))
+        timeline["audio_sha256"]=sha256(self.root/"audio"/"voiceover.wav")
+        (self.root/"audio-timeline.json").write_text(json.dumps(timeline,ensure_ascii=False),encoding="utf-8")
+        captions=self.root/"subtitles"/"captions.srt"
+        generate(self.root,self.root/"script.json",self.root/"audio-timeline.json",
+                 self.root/"audio"/"voiceover.wav",captions)
+        status={x["stage"]:x for x in project_state(self.root)["stages"]}
+        self.assertEqual("ready",status["aligned_subtitles"]["status"])
+        captions.write_text("changed captions",encoding="utf-8")
+        status={x["stage"]:x for x in project_state(self.root)["stages"]}
+        self.assertEqual("blocked",status["aligned_subtitles"]["status"])
 
     def test_timestamp_format(self):
         self.assertEqual("01:02:03,004",stamp(3723004))
