@@ -38,6 +38,7 @@ def load_config(path):
 def execute(provider,values,stage):
     if not provider:
         raise ValueError(f"{stage}: no provider configured")
+    values={**values,"python":sys.executable,"skill_dir":str(Path(__file__).resolve().parent)}
     try:
         argv=[value.format_map(values) for value in provider["argv"]]
     except KeyError as exc:
