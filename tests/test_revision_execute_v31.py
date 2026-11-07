@@ -95,6 +95,21 @@ class ActualRevisionTests(unittest.TestCase):
         self.assertTrue(output.stat().st_size>1000)
         with self.assertRaises(FileExistsError):
             create(self.root,self.rev,self.findings,self.critic,self.movie,self.plan,payload)
+    def test_real_semantic_recut_creates_new_timeline_without_new_assets(self):
+        from semantic_recut import recut
+        defect=copy.deepcopy(self.findings)
+        defect["issues"][0].update({"issue_type":"mechanical_equal_duration","shot_id":None})
+        structural=compile_revision(defect,self.critic,self.movie,self.plan,"rev-retime")
+        visual=recut(self.visual,self.timeline,self.script,self.audio,[0,1280,3000])
+        payload={"version":1,"revision_id":"rev-retime","replacements":{},
+                 "revised_visual_plan":visual}
+        result=create(self.root,structural,defect,self.critic,self.movie,self.plan,payload)
+        created=Path(result["project"])
+        self.assertEqual([],result["regenerated_sources"])
+        self.assertEqual(1280,read_json(created/"visual-plan.json")["shots"][0]["end_ms"])
+        self.assertEqual(3000,read_json(created/"visual-plan.json")["shots"][-1]["end_ms"])
+        self.assertFalse((created/"qa").exists())
+        self.assertEqual(1500,self.visual["shots"][0]["end_ms"])
     def test_forged_media_is_blocked(self):
         payload={"version":1,"revision_id":"rev-001","replacements":{
             "v2":{"source_file":"media/rework-b.png","source_sha256":"fake"}}}
