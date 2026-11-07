@@ -31,13 +31,15 @@ def save(project,c):
     p.parent.mkdir(parents=True,exist_ok=True)
     p.write_text(json.dumps(c,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
 
-def add(project,shot,candidate,gif,prompt,tool,reference,notes):
+def add(project,shot,candidate,gif,prompt,tool,reference,notes,prompt_delivery="context_only_unverified"):
     root=Path(project).resolve()
     safe(shot);safe(candidate)
     gif=Path(gif).resolve()
     prompt=Path(prompt).resolve()
     if not gif.is_file() or not prompt.is_file():
         raise FileNotFoundError("GIF and exact prompt file required")
+    if prompt_delivery not in ("explicit_tool_argument","context_only_unverified"):
+        raise ValueError("Unknown prompt delivery mode")
     if not tool.strip() or not reference.strip() or not notes.strip():
         raise ValueError("Actual tool, reference and notes required")
     with gif.open("rb") as f:
@@ -48,8 +50,8 @@ def add(project,shot,candidate,gif,prompt,tool,reference,notes):
     sha=digest(gif)
     if key in c["candidates"]:
         r=c["candidates"][key]
-        if r["sha256"]!=sha:
-            raise ValueError("Candidate ID already used for different bytes")
+        if r["sha256"]!=sha or r.get("prompt_sha256")!=digest(prompt) or r.get("prompt_delivery","context_only_unverified")!=prompt_delivery:
+            raise ValueError("Candidate ID already bound to different GIF/prompt/delivery")
         return r
     destination=root/"library"/"candidates"/shot/(candidate+".gif")
     prompt_snapshot=root/"library"/"prompts"/shot/(candidate+".txt")
@@ -68,6 +70,7 @@ def add(project,shot,candidate,gif,prompt,tool,reference,notes):
             "prompt":str(prompt_snapshot.relative_to(root)),
             "prompt_sha256":digest(prompt_snapshot),
             "tool":tool,"reference":reference,"notes":notes,
+            "prompt_delivery":prompt_delivery,
             "status":"unreviewed"}
     c["candidates"][key]=record
     save(root,c)
@@ -127,6 +130,7 @@ def main():
     a=sub.add_parser("add")
     for arg in ("shot","candidate","gif","prompt","tool","reference","notes"):
         a.add_argument("--"+arg,required=True)
+    a.add_argument("--prompt-delivery",choices=("explicit_tool_argument","context_only_unverified"),default="context_only_unverified")
     b=sub.add_parser("select")
     for arg in ("shot","candidate","reason"):
         b.add_argument("--"+arg,required=True)
@@ -134,7 +138,7 @@ def main():
     sub.add_parser("list")
     args=p.parse_args()
     if args.command=="add":
-        out=add(args.project,args.shot,args.candidate,args.gif,args.prompt,args.tool,args.reference,args.notes)
+        out=add(args.project,args.shot,args.candidate,args.gif,args.prompt,args.tool,args.reference,args.notes,args.prompt_delivery)
     elif args.command=="select":
         out=select(args.project,args.shot,args.candidate,args.reason,args.overwrite)
     else:
