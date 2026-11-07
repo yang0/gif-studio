@@ -136,6 +136,16 @@ def approve(project, video, reviewer, notes, checks):
         plan_path=root/"video-plan.json"
         plan=read(plan_path) if plan_path.is_file() else None
         check_report(critic,video,plan)
+        defects=root/"quality"/"defects.json"
+        if defects.is_file():
+            from revision_planner import validate_findings
+            if plan is None:
+                raise ValueError("v3.1 defect list requires current mixed edit plan")
+            findings=read(defects)
+            validate_findings(findings,critic,video,plan)
+            major=[x["id"] for x in findings["issues"] if x.get("severity") in ("critical","high")]
+            if major:
+                raise ValueError("Unresolved high/critical editorial defects block final release: "+", ".join(major))
         human=read(root/"quality"/"human-review.json")
         quality_issues=validate_human_review(human,critic)
         if quality_issues:
