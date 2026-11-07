@@ -144,6 +144,75 @@ class MixedMediaEditorTests(unittest.TestCase):
             compile_plan(self.root,self.script,self.timeline,self.visual,
                          self.audio,self.board,allow_mixed=False)
 
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"),
+                         "FFmpeg required")
+    def test_real_information_motion_and_camera_presets(self):
+        from motion_graphics import render as render_graphic
+        graphic=self.root/"media"/"real-information.mp4"
+        render_graphic({"version":1,"template":"process","title":"Three steps",
+                        "items":[{"label":"See"},{"label":"Compare"},{"label":"Verify"}]},
+                       graphic,fps=20,width=360,height=640,duration=1.1)
+        self.visual["shots"][1]["media_type"]="data_motion"
+        self.visual["shots"][1]["role"]="process"
+        self.visual["shots"][1]["source_file"]="media/real-information.mp4"
+        self.visual["shots"][1]["source_sha256"]=sha256(graphic)
+        self.visual["shots"][0]["camera_preset"]="closeup"
+        self.visual["shots"][0]["character_id"]="one-real-character"
+        plan=compile_plan(self.root,self.script,self.timeline,self.visual,
+                          self.audio,self.board,allow_mixed=True)
+        self.assertEqual("data_motion",plan["clips"][1]["media_type"])
+        self.assertEqual("closeup",plan["clips"][0]["camera_preset"])
+        result=render(self.root,plan,self.script,self.timeline,self.visual,
+                      self.audio,self.board,self.root/"motion-preview.mp4",
+                      allow_mixed=True)
+        self.assertIn("data_motion",result["media_types"])
+        self.assertFalse(result["formal_approval"])
+        meta=graphic.with_suffix(".mp4.motion.json")
+        meta.unlink()
+        with self.assertRaisesRegex(ValueError,"provenance"):
+            validate_compiled(self.root,plan,self.audio,self.script,
+                              self.timeline,self.visual,self.board,True)
+
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"),
+                         "FFmpeg required")
+    def test_mixed_release_requires_each_real_shot_review(self):
+        from mixed_release import source_review, release,verify_release,CHECKS
+        from final_review import sheet as inspect_final,approve as approve_final
+        self.create_video()
+        plan=compile_plan(self.root,self.script,self.timeline,self.visual,
+                          self.audio,self.board,allow_mixed=True)
+        (self.root/"video-plan.json").write_text(json.dumps(plan),encoding="utf-8")
+        srt=self.root/"subtitles"/"captions.srt"
+        srt.parent.mkdir()
+        generate_srt(self.root,self.root/"script.json",self.root/"audio-timeline.json",
+                     self.audio,srt)
+        movie=self.root/"build"/"mixed-preview.mp4"
+        render(self.root,plan,self.script,self.timeline,self.visual,self.audio,self.board,
+               movie,subtitles=srt,allow_mixed=True)
+        with self.assertRaisesRegex(ValueError,"Unreviewed mixed shot"):
+            release(self.root,plan,self.script,self.timeline,self.visual,self.audio,
+                    self.board,srt,movie)
+        checks={k:True for k in CHECKS}
+        for clip in plan["clips"]:
+            source_review(self.root,clip,plan,"fixture reviewer",
+                          "Observed source media and checked footage, legibility and continuity",
+                          checks)
+        report=release(self.root,plan,self.script,self.timeline,self.visual,self.audio,
+                       self.board,srt,movie)
+        self.assertEqual("PENDING_FINAL_VIDEO_REVIEW",report["status"])
+        self.assertEqual(3,len(report["shots"]))
+        inspect_final(self.root,movie,frames=3)
+        # Touch the existing screenshot: the recorded director and video
+        # approval must no longer be usable.
+        Image.new("RGB",(320,240),"purple").save(self.still)
+        with self.assertRaisesRegex(ValueError,"source changed"):
+            verify_release(self.root,movie)
+        with self.assertRaises(ValueError):
+            approve_final(self.root,movie,"fixture reviewer",
+                          "Reviewed complete synthetic preview, not a publishable film",
+                          {key:True for key in
+                           ("semantic","pacing","continuity","subtitles","audio")})
+
     def test_unsupported_data_motion_is_not_misrepresented_as_video(self):
         self.visual["shots"][1]["media_type"]="data_motion"
         with self.assertRaisesRegex(ValueError,"real supported renderer"):
