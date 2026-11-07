@@ -277,6 +277,18 @@ class MixedMediaEditorTests(unittest.TestCase):
             approve_final(self.root,formal,"fixture reviewer",
                           "Observed synthetic full video but should not permit a changed score",checks)
         (quality/"human-review.json").write_text(json.dumps(human),encoding="utf-8")
+        defect={"version":1,"critic_report_sha256":sha256_json(critic),
+                "source_plan_sha256":sha256_json(plan),
+                "issues":[{"id":"QA-HIGH","issue_type":"narrative_redundancy",
+                           "severity":"high","shot_id":"v2",
+                           "evidence":"Actual second shot repeats an uninformative card",
+                           "proposed_fix":"Replace with meaningful real recorded mechanism",
+                           "verification":"Review changed shot and compare actual exported MP4"}]}
+        (quality/"defects.json").write_text(json.dumps(defect),encoding="utf-8")
+        with self.assertRaisesRegex(ValueError,"Unresolved high/critical"):
+            approve_final(self.root,formal,"fixture reviewer",
+                "A real critical shot defect must block the final movie release",checks)
+        (quality/"defects.json").unlink()
         signed=approve_final(self.root,formal,"fixture reviewer",
             "Observed full synthetic test video and all placeholder tracks; CI does not prove quality",checks)
         self.assertEqual("release_approved",signed["status"])
