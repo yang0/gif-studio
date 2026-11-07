@@ -11,6 +11,14 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 ## v3.0 · Audio-first Visual Director（优先于旧版分镜时序）
 
+### 已有素材直接剪成知识视频（v3 混合媒体预览）
+
+用户要求的是视频，不是号池或生图接口。对已有录屏、截图、GIF，应优先通过 `scripts/video_cut.py` 进行音频优先的 A/B-roll 剪辑，而不是强迫用户先生成一批 GPT GIF。真实音频+对齐时间码+视觉计划确认后，以 `--compile --allow-mixed-media` 生成不可变来源的剪辑草稿，再以 `--preview --allow-mixed-media --subtitles project/subtitles/captions.srt` 合成带旁白和字幕的 MP4。详情参见 `references/mixed-media-video.md`。
+
+截图只能作为显式标记的静态证据镜头；录屏必须来自真实文件，不能用程序化矢量代替 AI 生成的 GIF。当前仅提供混合素材草稿预览，正式视觉批准仍不能跳过。
+
+
+
 关联 [Issue #1](https://github.com/yang0/gif-studio/issues/1)。本版核心流程是：
 **定稿完整口播 → 整段真实配音 → 真实毫秒时间码 → A/B-roll 视觉编排 → 角色/场景参考 → 多个真实 GPT GIF 候选 → 选片和剪辑 → 审片/合成**。
 

@@ -4,6 +4,20 @@
 
 ## v3.0 研发中 · 音频优先的知识视频生产
 
+### v3 · 真正的视频剪辑：GIF、录屏、截图按配音时间轴混合
+
+现在可用 `scripts/video_cut.py` 从真实 `audio-timeline.json` 与 A/B-roll `visual-plan.json` 直接编排**已有 GIF、录屏 MP4、静态截图**，输出带实际旁白和可选字幕的 MP4 草稿。它是视频制作流程，不要求号池、特定生图 API 或生成新 GIF。截图明确标为静态镜头，不会伪装成动画；剪辑会按实际媒体时长截取，防止缺失画面后靠长定格补时长。
+
+```bash
+python scripts/video_cut.py --project project --compile --allow-mixed-media
+python scripts/audio_subtitles.py --project project
+python scripts/video_cut.py --project project --preview --allow-mixed-media --subtitles project/subtitles/captions.srt
+```
+
+参见 [混合视频剪辑说明](references/mixed-media-video.md)。此路径输出 `UNREVIEWED_MIXED_PREVIEW`，仍需实际观看/试听；混合媒体正式发布门禁尚未完成。
+
+
+
 [总任务 Issue #1](https://github.com/yang0/gif-studio/issues/1) · 开发按 v3 设计契约逐步落地。参考 xilo 的 Codex 知识视频实践：整段配音 → 实际声学对齐 → A/B-roll 视觉编排 → 角色三视图与场景参考 → 多候选素材 → 剪辑 → 完整审片。
 
 已落地（尚非完整自动生产器）：

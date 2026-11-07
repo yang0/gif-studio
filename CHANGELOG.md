@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-dev.6] - 2026-11-07
+- Added `video_cut.py`: audio-first A/B-roll preview from genuine GIF candidates, actual screen recordings and explicitly static screenshots.
+- Uses original file hashes, real source in-points, frame-accurate FFmpeg cuts, narration audio and optional aligned SRT burn-in.
+- Verifies actual exported clip frame counts, source duration, stale visual plans, and prevents unapproved mixed-media substitution.
+- Added FFmpeg regression tests with 3 different real media containers; output is always UNREVIEWED_MIXED_PREVIEW pending full review.
+- Kept video creation independent of account pools, paid model APIs and speculative GIF generators.
+
+
 ## [3.0.0-dev.5] - 2026-11-07
 - Removed DSH account-pool integration and its documentation/tests: gif-studio is a standalone video-production skill, independent of any account pool or image provider.
 - Retained optional provider-neutral candidate ingestion and video-editing tools; video delivery, voice alignment, A/B-roll direction and visual QA remain the product focus.
