@@ -143,9 +143,12 @@ def verify_release(project,video):
         raise ValueError("Reviewed video differs from mixed release")
     # A signed EDL is insufficient if the actual recording, screenshots or
     # motion graphic files have changed since preview was rendered.
-    validate_compiled(root,load(root/"video-plan.json"),root/"audio"/"voiceover.wav",
-                      load(root/"script.json"),load(root/"audio-timeline.json"),
-                      load(root/"visual-plan.json"),load(root/"storyboard.json"),True)
+    validate_compiled(root,load(source_files["video_plan"]["path"]),
+                      Path(source_files["audio"]["path"]),
+                      load(source_files["script"]["path"]),
+                      load(source_files["timeline"]["path"]),
+                      load(source_files["visual_plan"]["path"]),
+                      load(source_files["storyboard"]["path"]),True)
     for row in record.get("shots",[]):
         path=record_path(root,row["shot_id"])
         if not path.is_file() or sha256(path)!=row["review_sha256"]:
