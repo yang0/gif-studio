@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-dev.1] - 2026-11-07
+- Started Issue #1 Audio-first Visual Director; introduced validated whole-track acoustic timeline and A/B-roll visual decision schema.
+- Added project_flow.py for project manifest, stage diagnostics and missing/stale resource reporting (not a full automated producer).
+- Added reference-pack fingerprint validation (character front/side/back/stroke/scene) and actual GIF-generator handoff/ingest adapter; no fabricated model calls.
+- Added regression tests for invalid alignment, narration mismatch, visual gaps, reference mutation and generation receipts.
+- Full TTS, actual forced aligner, audio-to-EDL execution and release-quality sample remain open.
+
 ## [2.3.0-candidate-release-alpha] - 2026-11-07
 - Added independent per-candidate GIF technical/visual approval records, including contact-sheet and source provenance.
 - Added formal multi-cut release requiring every used candidate approved, natural narration, timed SRT and director-approved EDL.

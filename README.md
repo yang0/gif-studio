@@ -2,6 +2,34 @@
 
 **基于 Codex 中实际可用的 GPT GIF 功能，制作多风格知识类与叙事类短视频。** 不绑定 Vox、半调拼贴或任何一种视觉模板。
 
+## v3.0 研发中 · 音频优先的知识视频生产
+
+[总任务 Issue #1](https://github.com/yang0/gif-studio/issues/1) · 开发按 v3 设计契约逐步落地。参考 xilo 的 Codex 知识视频实践：整段配音 → 实际声学对齐 → A/B-roll 视觉编排 → 角色三视图与场景参考 → 多候选素材 → 剪辑 → 完整审片。
+
+已落地（尚非完整自动生产器）：
+
+- `scripts/audio_timeline.py`：检查完整音轨 SHA、语句级毫秒区间、原文一致性和非伪造的对齐来源。
+- `scripts/visual_plan.py`：按实际语音段构建 A/B-roll 视觉编排校验，检查覆盖、时间线空隙及错误镜头类型。
+- `scripts/project_flow.py`：统一项目清单和阶段 `init/status/plan/validate`，是只读诊断/依赖检查，而不是生成器。
+- `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。
+- `scripts/generator_adapter.py`：为真实 Codex GIF 生成准备完整提示词/参考包请求，并将实际输出与工具来源登记入候选池；不会自行发起虚构的 GPT API 请求。
+
+```bash
+python3 scripts/project_flow.py init --project project
+# 先准备 project/script.json 与 audio/voiceover.wav，提供真实对齐时间码
+python3 scripts/audio_timeline.py --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json
+python3 scripts/visual_plan.py --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --plan project/visual-plan.json
+python3 scripts/project_flow.py status --project project
+
+# 角色 reference-pack.json 必须指向真实图片，不能用模板占位符直接生成
+python3 scripts/reference_pack.py --project project --manifest project/reference-pack.json
+python3 scripts/generator_adapter.py --project project --prepare --shot shot-01 --candidate take-a --prompt project/prompts/shot-01.txt --references project/reference-pack.json
+# Codex/其他真实工具执行生成，记录实际回执后才可登记真实输出
+python3 scripts/generator_adapter.py --project project --ingest --shot shot-01 --candidate take-a --gif /actual/generated.gif --receipt /actual/receipt.json --notes "具体素材观察"
+```
+
+此流程不会将音轨时长按字数均摊伪装“声学对齐”，也不会把任意 GIF 注册为自动视觉通过。**v3 完整真实样片、音频生成/对齐与统一自动执行器仍未完成**，见 Issue #1。
+
 ## 核心规则：GPT GIF ONLY
 
 正式视频**不能用蹩脚的矢量动画、PPT 动图或本地程序化示意图替换 GPT GIF**。如果生成跑题或质量不过关，立即停止正式合成、保留失败 GIF 和 QA 记录。默认 `--asset-mode gpt-only` 在代码层拦截程序化镜头。仅当用户明确授权混合模式，才能指定 `--asset-mode mixed`。ffmpeg 仍用于转码、字幕、音频，不负责替代主要视觉素材。

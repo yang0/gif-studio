@@ -9,6 +9,21 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 你是视频导演和制作 Agent；**本项目不绑定 Vox、半调拼贴或任何单一风格**。从叙事目标决定视觉类型，再从风格库选风格。用户明确指定的视觉方向优先。目标是解释清楚、风格统一、能够可靠交付。
 
+## v3.0 · Audio-first Visual Director（优先于旧版分镜时序）
+
+关联 [Issue #1](https://github.com/yang0/gif-studio/issues/1)。本版核心流程是：
+**定稿完整口播 → 整段真实配音 → 真实毫秒时间码 → A/B-roll 视觉编排 → 角色/场景参考 → 多个真实 GPT GIF 候选 → 选片和剪辑 → 审片/合成**。
+
+不要先把脚本均分成几秒一个镜头，再用 GIF 末帧定格来凑口播；旧版 Gate 1B / edit-plan 中估算镜头时长的规则在 v3 项目中应让位于真实音频时间轴。A/B-roll 是叙事职责，不是工具或文件格式；GPT GIF 仍是默认主要视觉素材，可控的文字/数据叠加必须显式标记，绝不把程序绘图当做生成 GIF。参考 [音轨优先流程](references/audio-first-production.md)。
+
+先创建项目清单：`python3 scripts/project_flow.py init --project project`，以后用 `status/plan/validate` 检查阶段；该命令目前提供统一的**只读检查入口**，不是已经完成自动 TTS/GIF 生成的全功能执行器。
+
+真实配音必须整段生成或导入，不能拿单元测试用的音轨充数。使用 `scripts/audio_timeline.py` 校验来自实际 forced aligner 或人工逐句核对的 `audio-timeline.json`；禁止编造时间码。再使用 `scripts/visual_plan.py` 校验 `visual-plan.json`，根据真实时间码决定情景/人物 A-roll 与知识/原理 B-roll 的视觉职责、镜头长度及转场理由。
+
+A-roll 多镜头需要真实参考包：三视图（正/侧/背）、笔触局部和场景图。使用 `reference_pack.py` 核对实际图像哈希和分辨率。Codex GIF 生成接口必须遵循 `generator_adapter.py` 的准备/入库协议：显式记录每条完整 prompt、参考包、真实工具调用/回执、生成 GIF，并让候选进独立素材库。**工具回执只是来源记录，不代表自动认证，也不能绕过视觉审核。** 不要声称此 Python 脚本本身会生成 GIF。
+
+目前这条 v3 路线只完成**数据契约与校验/入库衔接**，真正的整段 TTS、强制声学对齐实现、自由剪辑直接由 visual-plan 驱动及高质量真实样片仍属于 Issue #1 后续工作；不能宣称 v3 已全部交付。
+
 ## 运行前提
 
 - 首先确认当前 Codex 会话**实际拥有且可控**的 GIF 生成功能。必须检查图像工具是否有能明确传递“完整逐镜 prompt”的参数。如果工具只能从历史聊天推断并且不能确认逐镜 prompt 送达，则标记 prompt_delivery=context_only_unverified；不能当作可验证的正式生产流程。若跨主题生成结果反复出现相同图案，运行 scripts/probe_gif_prompt_control.py 比较实际 GIF 并暂停正式生产，不要盲目修改镜头文案。不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
