@@ -107,8 +107,21 @@ def state(root):
             entry("aligned_subtitles","ready" if not issues else "blocked",issues)
         except (ValueError,OSError,TypeError,KeyError) as exc:
             entry("aligned_subtitles","blocked",[str(exc)])
+    # Normal videos with real recordings/screenshots/information motion do not
+    # need to pass a GIF-generation pipeline or open a GIF candidate library.
+    # Missing/invalid visual plans retain legacy diagnostics above.
+    needs_gif=True
+    if loc["visual_plan"].is_file():
+        try:
+            media_plan=json.loads(loc["visual_plan"].read_text(encoding="utf-8"))
+            needs_gif=any(x.get("media_type")=="gpt_gif"
+                          for x in media_plan.get("shots",[]))
+        except (ValueError,TypeError,AttributeError):
+            needs_gif=True
     production_manifest=root/"production"/"visual-asset-plan.json"
-    if not production_manifest.is_file():
+    if not needs_gif:
+        entry("asset_production","ready",[])
+    elif not production_manifest.is_file():
         entry("asset_production","missing",[
             "A/B-roll candidate batch not prepared; run visual_assets.py --prepare"])
     else:
@@ -125,7 +138,9 @@ def state(root):
         except (ValueError,OSError,KeyError,TypeError) as exc:
             entry("asset_production","blocked",[str(exc)])
     catalog_path=root/"library"/"catalog.json"
-    if not catalog_path.is_file():
+    if not needs_gif:
+        entry("asset_library","ready",[])
+    elif not catalog_path.is_file():
         entry("asset_library","missing",["No candidate library; produce real GPT GIF candidates"])
     else:
         try:
@@ -142,8 +157,20 @@ def state(root):
                 entry("asset_library","ready" if not missing else "blocked",missing)
         except (ValueError,OSError,KeyError,TypeError) as exc:
             entry("asset_library","blocked",[str(exc)])
-    if not loc["sequence"].is_file():
-        entry("edit_sequence","missing",["No multi-clip sequence.json"])
+    mixed_plan=root/"video-plan.json"
+    if mixed_plan.is_file():
+        try:
+            from video_cut import validate_compiled
+            edit=json.loads(mixed_plan.read_text(encoding="utf-8"))
+            visual=json.loads(loc["visual_plan"].read_text(encoding="utf-8"))
+            timeline=json.loads(loc["audio_timeline"].read_text(encoding="utf-8"))
+            board=json.loads(loc["storyboard"].read_text(encoding="utf-8"))
+            validate_compiled(root,edit,loc["audio"],script,timeline,visual,board,True)
+            entry("edit_sequence","ready",[])
+        except (ValueError,OSError,KeyError,TypeError,FileNotFoundError) as exc:
+            entry("edit_sequence","blocked",[str(exc)])
+    elif not loc["sequence"].is_file():
+        entry("edit_sequence","missing",["No mixed video-plan.json or legacy sequence.json"])
     else:
         try:
             from sequence_cut import verify
@@ -153,8 +180,18 @@ def state(root):
             entry("edit_sequence","ready" if not issues else "blocked",issues)
         except (ValueError,OSError,KeyError,TypeError) as exc:
             entry("edit_sequence","blocked",[str(exc)])
-    if not loc["release"].is_file():
-        entry("release","missing",["No formal release provenance"])
+    mixed_release=root/"build"/"mixed-release"/"release-provenance.json"
+    if mixed_release.is_file():
+        try:
+            from mixed_release import verify_release
+            info=json.loads(mixed_release.read_text(encoding="utf-8"))
+            formal=Path(info["sources"]["video"]["path"])
+            verify_release(root,formal)
+            entry("release","ready",[])
+        except (ValueError,OSError,KeyError,TypeError) as exc:
+            entry("release","blocked",[str(exc)])
+    elif not loc["release"].is_file():
+        entry("release","missing",["No formal mixed or GIF-only release provenance"])
     else:
         try:
             record=json.loads(loc["release"].read_text(encoding="utf-8"))
