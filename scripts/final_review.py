@@ -107,6 +107,12 @@ def approve(project, video, reviewer, notes, checks):
         seq=root/"sequence.json"
         if seq.is_file() and stable_digest(json.loads(seq.read_text(encoding="utf-8")))!=provenance.get("sequence_sha256"):
             raise ValueError("Approved sequence changed since formal render")
+    mixed=root/"build"/"mixed-release"/"release-provenance.json"
+    if mixed.is_file():
+        from mixed_release import verify_release
+        verify_release(root,video)
+    elif (root/"video-plan.json").is_file():
+        raise ValueError("Mixed video approval requires formal mixed-release provenance")
     record={"status":"release_approved","video":info["video"],
             "sha256":info["sha256"],"reviewer":reviewer,
             "review_notes":notes,"checks":checks,
