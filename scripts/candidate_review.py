@@ -126,10 +126,10 @@ def approve_candidate(project,storyboard,shot,candidate,reviewer,notes,checks,
         raise ValueError("Named reviewer and substantive observed visual notes required")
     if any(checks.get(k) is not True for k in CHECKS):
         raise ValueError("All five candidate visual checks must be explicitly true")
-    if prompt_delivery!="explicit_tool_argument" or rec.get("prompt_delivery","context_only_unverified")!="explicit_tool_argument":
-        raise ValueError("Formal GPT GIF candidate requires explicitly documented prompt delivery at library ingestion")
     tech,approval=paths(project,shot,candidate)
     rec,_=identity(project,shot,candidate)
+    if prompt_delivery!="explicit_tool_argument" or rec.get("prompt_delivery","context_only_unverified")!="explicit_tool_argument":
+        raise ValueError("Formal GPT GIF candidate requires explicitly documented prompt delivery at library ingestion")
     ctx=context(project,storyboard,shot)
     if not tech.is_file():
         raise ValueError("Run candidate review --inspect before approval")
