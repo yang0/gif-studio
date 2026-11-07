@@ -114,6 +114,35 @@ def approve(project, video, reviewer, notes, checks):
         verify_release(root,video)
     elif (root/"video-plan.json").is_file():
         raise ValueError("Mixed video approval requires formal mixed-release provenance")
+    # v3.1 projects explicitly opt in by creating a semantic director plan.
+    # A technical report alone must NEVER unlock final publication.
+    director=root/"director-v2.json"
+    if director.is_file():
+        from visual_director import validate as validate_director
+        from video_critic import check_report
+        from visual_plan import sha256_json
+        required=[root/"audio-timeline.json",root/"visual-plan.json",
+                  root/"quality"/"critic.json",root/"quality"/"human-review.json"]
+        if any(not p.is_file() for p in required):
+            raise ValueError("v3.1 final approval requires aligned director plan, critic evidence and declared full-video review")
+        read=lambda path:json.loads(path.read_text(encoding="utf-8"))
+        timeline=read(root/"audio-timeline.json")
+        visual=read(root/"visual-plan.json")
+        problems=[x for x in validate_director(read(director),timeline,visual)
+                  if not x.endswith("(warning)")]
+        if problems:
+            raise ValueError("v3.1 director plan stale/invalid: "+"; ".join(problems))
+        critic=read(root/"quality"/"critic.json")
+        plan_path=root/"video-plan.json"
+        plan=read(plan_path) if plan_path.is_file() else None
+        check_report(critic,video,plan)
+        human=read(root/"quality"/"human-review.json")
+        if (human.get("video_sha256")!=info["sha256"] or
+            human.get("technical_report_sha256")!=sha256_json(critic) or
+            human.get("status")!="HUMAN_REVIEW_DECLARED" or
+            human.get("eligible_for_independent_final_review") is not True or
+            human.get("watched_entire_video") is not True):
+            raise ValueError("v3.1 full-video quality gate has not been independently declared as passed")
     record={"status":"release_approved","video":info["video"],
             "sha256":info["sha256"],"reviewer":reviewer,
             "review_notes":notes,"checks":checks,
