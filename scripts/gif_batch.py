@@ -133,21 +133,32 @@ def execute_one(project, entry, command, caps, timeout, max_attempts):
     key=shot+"/"+take
     status=root/"production"/"batch"/shot/(take+".json")
     saved=json.loads(status.read_text(encoding="utf-8")) if status.is_file() else {}
-    existing=read_catalog(root)["candidates"].get(key)
-    if existing:
-        gif=root/existing["file"];prompt=root/existing["prompt"]
-        if gif.is_file() and prompt.is_file() and sha256(gif)==existing["sha256"] and sha256(prompt)==existing["prompt_sha256"]:
-            result={"key":key,"status":"already_ingested","gif_sha256":existing["sha256"]}
-            atomic_json(status,result)
-            return result
-        return {"key":key,"status":"blocked","error":"Registered candidate bytes changed; refusing overwrite"}
     try:
-        payload=prepare(root,entry,caps["reference_images"] is True if "reference_images" in caps else False)
+        payload=prepare(root,entry,caps.get("reference_images") is True)
     except Exception as exc:
         result={"key":key,"status":"blocked","error":str(exc)}
         atomic_json(status,result)
         return result
     input_hash=sha256_json(payload)
+    existing=read_catalog(root)["candidates"].get(key)
+    if existing:
+        gif=root/existing["file"];prompt=root/existing["prompt"]
+        if (gif.is_file() and prompt.is_file()
+            and sha256(gif)==existing["sha256"]
+            and sha256(prompt)==existing["prompt_sha256"]
+            and existing["prompt_sha256"]==payload["prompt_sha256"]
+            and (not saved.get("input_sha256") or saved["input_sha256"]==input_hash)):
+            result={"key":key,"status":"already_ingested","gif_sha256":existing["sha256"],
+                    "input_sha256":input_hash}
+            atomic_json(status,result)
+            return result
+        result={"key":key,"status":"blocked","error":"Registered source or current prompt/reference request differs; use a new candidate ID"}
+        atomic_json(status,result)
+        return result
+    try:
+        pass
+    except Exception:
+        raise
     if saved.get("input_sha256") and saved["input_sha256"]!=input_hash:
         result={"key":key,"status":"blocked","error":"Input changed since prior run; use a new candidate ID"}
         atomic_json(status,result)
