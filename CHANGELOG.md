@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-dev.8] - 2026-11-07
+- Added original four-template B-roll information motion renderer with source provenance, actual MP4 output, and FFmpeg tests.
+- Added A-roll scene viewpoint labels and honest camera reframing; real first-person requires real POV evidence.
+- Added per-shot mixed video review, separate formal MP4 and source-bound final approval with stale-asset invalidation.
+- Produced a 24-second, eight-shot mixed editorial sample using three genuine previous GIFs and five original B-roll scenes.
+- Sample is NOT publish-approved: local Mandarin TTS remains robotic and no genuine sentence-level alignment was available.
+
 ## [3.0.0-dev.3] - 2026-11-07
 - Added visual_assets.py to derive distinct candidate prompt and batch manifests directly from verified A/B-roll visual plans and narration anchors.
 - Required real identity/style/scene reference pack for character A-roll and unique shot-specific motion/camera spec for every candidate.

@@ -9,6 +9,13 @@ description: Codex-first audio-aligned knowledge video production skill. 按口�
 
 你是视频导演和制作 Agent；**本项目不绑定号池、图片生成模型、Vox、半调拼贴或任何单一风格**。从叙事目标决定视觉类型，再从风格库选风格。用户明确指定的视觉方向优先。目标是解释清楚、风格统一、能够可靠交付。
 
+## 新增视频能力：B-roll / A-roll / 正式发布
+
+信息型 B-roll：可使用 scripts/motion_graphics.py 的流程、比较、时间线和数字动画，保留 .mp4.motion.json 来源并在 video_cut.py 中引用 media_type=data_motion。这是程序化知识图形，不是 GPT GIF。见 references/motion-graphics.md。
+A-roll：以真实人物源视频或 GIF 制作主持人/主角/配角镜头和中景特写；不得以裁切制造假的第一人称或另一机位。真实第一人称须附 source_perspective=verified_first_person。见 references/acting-and-viewpoints.md。
+正式视频：经过 video_cut.py 预览后必须逐镜运行 mixed_release.py --approve-shot，然后 mixed_release.py --release 产生正式 MP4，但其状态仍为 PENDING_FINAL_VIDEO_REVIEW。必须真正观看和试听完整影片并运行 final_review.py --inspect 与 --approve。见 references/mixed-formal-release.md。
+2026-11-07 的 24 秒示例只是实际剪辑测试：自然配音、强制声学对齐和发布级最终审片尚不合格，不得把技术合成成功当作成片验收成功。
+
 ## v3.0 · Audio-first Visual Director（优先于旧版分镜时序）
 
 ### 已有素材直接剪成知识视频（v3 混合媒体预览）

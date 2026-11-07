@@ -2,6 +2,13 @@
 
 **基于 Codex 的知识视频制作 Skill：从口播、A/B-roll 到素材剪辑、字幕、音效与 MP4 交付。** 支持已有录屏、截图、真实 GIF，视内容选择合适素材，不绑定号池、单一模型或风格模板。
 
+## v3 本轮新增：真正的视频信息动效、人物景别与正式混合审核
+
+已实现 4 种原创 B-roll 信息动效（流程、对比、时间线、数字变化），可按真实声音和视觉计划混入录屏、GIF、截图。详见 references/motion-graphics.md。
+多视角 A-roll 已支持主持人、主角、配角、真实 POV 素材和同一画面的中景/特写取景。数字裁切不冒充真正的另外一个机位。详见 references/acting-and-viewpoints.md。
+混合视频在逐镜来源审核后，可以制作单独的 build/formal-mixed/final.mp4；完整观看并试听后仍需由 final_review.py 执行最终审批。详见 references/mixed-formal-release.md。
+本轮真实制作了 24 秒 8 镜头的竖屏剪辑样片；因离线中文配音机械、无真实逐句对齐，明确标为未达发布级，详见 examples/focus-notification-v3/README.md。
+
 ## v3.0 研发中 · 音频优先的知识视频生产
 
 ### v3 · 真正的视频剪辑：GIF、录屏、截图按配音时间轴混合
