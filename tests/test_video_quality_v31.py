@@ -54,6 +54,7 @@ class CriticAndRevisionTests(unittest.TestCase):
         self.assertTrue(self.report["technical"]["video"])
         self.assertTrue(self.report["technical"]["audio"])
         self.assertTrue(any(x["kind"]=="adjacent_visual_similarity" for x in self.report["risks"]))
+        self.assertIn("cut_seam_frame_difference",self.report["observations"][1])
         self.assertIn("knowledge truth",self.report["cannot_assess"])
 
     def test_review_needs_actual_attestation_and_cannot_auto_pass(self):
