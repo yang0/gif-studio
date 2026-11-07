@@ -342,6 +342,8 @@ def main():
     script=read(a.script or root/"script.json")
     timeline=read(a.timeline or root/"audio-timeline.json")
     visual=read(a.visual_plan or root/"visual-plan.json")
+    from real_source_gate import require_media
+    require_media(root,visual)  # CLI default: real media only, even for an old compiled EDL.
     storyboard=read(a.storyboard or root/"storyboard.json")
     audio=a.audio or root/"audio"/"voiceover.wav"
     dest=Path(a.plan or root/"video-plan.json")
