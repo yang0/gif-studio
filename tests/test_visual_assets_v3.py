@@ -108,6 +108,48 @@ class VisualAssetTests(unittest.TestCase):
             plan(self.root,self.script,self.timeline,self.visual,
                  self.root/"audio"/"voiceover.wav",self.style,self.board)
 
+    def test_prepared_plan_executes_real_batch_protocol_to_unreviewed_library(self):
+        # This backend writes synthetic GIF fixture bytes only; it is NOT a
+        # production GIF model and does not prove semantic content quality.
+        from gif_batch import run as run_batch
+        backend=self.root/"fixture_backend.py"
+        backend.write_text(r'''
+import json,sys
+from pathlib import Path
+from PIL import Image
+if sys.argv[-1]=="--capabilities":
+    print(json.dumps({"version":1,"gif":True,"explicit_prompt":True,"reference_images":True}))
+    sys.exit(0)
+payload=json.loads(sys.stdin.read())
+palette=["red","green","blue","yellow","orange","purple"]
+take=payload["candidate_id"]
+if take=="detail":
+    palette=list(reversed(palette))
+elif take=="mechanism":
+    palette=palette[2:]+palette[:2]
+frames=[Image.new("RGB",(270,480),c) for c in palette]
+out=Path(payload["output_directory"])/"image.gif"
+frames[0].save(out,format="GIF",save_all=True,append_images=frames[1:],duration=200,loop=0)
+print(json.dumps({"version":1,"tool":"synthetic-fixture-not-real-model",
+"output_reference":take,"prompt_sha256":payload["prompt_sha256"],
+"reference_pack_sha256":payload["reference_pack_sha256"],
+"attached_reference_sha256":{k:v["sha256"] for k,v in payload["references"].items()},
+"gif_path":str(out)}))
+''',encoding="utf-8")
+        prepare(self.root)
+        entry=json.loads((self.root/"production"/"visual-asset-plan.json").read_text())
+        result=run_batch(self.root,entry["batch"],[sys.executable,str(backend)],
+                         workers=2,max_attempts=1)
+        self.assertEqual(3,result["ingested"],result)
+        status=check(self.root)
+        self.assertEqual("produced_unreviewed",status["status"],status)
+        self.assertEqual(3,status["produced_count"])
+        self.assertFalse(status["visual_approval"])
+        # Re-entering the batch never creates a new source or mislabels approval.
+        again=run_batch(self.root,entry["batch"],[sys.executable,str(backend)],
+                        workers=2,max_attempts=1)
+        self.assertTrue(all(x["status"]=="already_ingested" for x in again["results"]))
+
     def test_changed_visual_plan_rejects_stale_prepared_tasks(self):
         prepare(self.root)
         self.visual["shots"][1]["visual_event"]="A different knowledge mechanism"
