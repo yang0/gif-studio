@@ -60,7 +60,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
     clips=[]
     for i,scene in enumerate(shots):
         typ=scene["media_type"]
-        if typ not in ("gpt_gif","screen_recording","screenshot"):
+        if typ not in ("gpt_gif","screen_recording","screenshot","data_motion"):
             raise ValueError(f"{scene['id']}: {typ} needs a real supported renderer")
         if typ!="gpt_gif" and not allow_mixed:
             raise ValueError("Mixed-media video requires explicit --allow-mixed-media")
@@ -76,8 +76,17 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
         else:
             path=inside(root,scene.get("source_file"))
             expected=scene.get("source_sha256")
-            if typ=="screen_recording" and path.suffix.lower() not in VIDEOS:
+            if typ in ("screen_recording","data_motion") and path.suffix.lower() not in VIDEOS:
                 raise ValueError("Recording must be a real video file")
+            if typ=="data_motion":
+                proof=Path(str(path)+".motion.json")
+                if not proof.is_file():
+                    raise ValueError("Information motion must include generated provenance report")
+                meta=json.loads(proof.read_text(encoding="utf-8"))
+                if (meta.get("media_type")!="data_motion" or
+                    meta.get("source_sha256")!=expected or
+                    meta.get("source_kind")!="programmatic_informational_graphic_not_gpt_gif"):
+                    raise ValueError("Information motion provenance invalid or outdated")
             if typ=="screenshot" and path.suffix.lower() not in STILLS:
                 raise ValueError("Screenshot must be a supported still image")
         if sha256(path)!=expected:
@@ -97,7 +106,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
             if not info.get("pass"):
                 raise ValueError("GIF cannot decode: "+"; ".join(info.get("issues",[])))
             duration=info["duration_sec"]
-        elif typ=="screen_recording":
+        elif typ in ("screen_recording","data_motion"):
             if not video_has_stream(path):
                 raise ValueError("Recording has no video stream")
             duration=video_duration(path)
@@ -108,8 +117,20 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
             duration=None
         if duration is not None and (source_in/1000+count/fps)>duration+1/fps+.001:
             raise ValueError(f"{scene['id']}: source footage too short, cannot freeze to fill")
+        camera=scene.get("camera_preset","native")
+        allowed={"native","presenter","medium","closeup","pov","reaction"}
+        if camera not in allowed:
+            raise ValueError(f"{scene['id']}: unknown camera preset")
+        if camera!="native" and scene["roll"]!="A":
+            raise ValueError("A-roll camera presets cannot be attached to B-roll")
+        if typ=="screenshot" and camera!="native":
+            raise ValueError("Still screenshot cannot become fake A-roll camera animation")
+        if camera!="native" and not str(scene.get("character_id","")).strip():
+            raise ValueError("A-roll camera requires stable character_id")
         clips.append({
             "id":"cut-"+str(i+1).zfill(3),
+            "camera_preset":camera,
+            "character_id":scene.get("character_id"),
             "role":scene["roll"],"media_type":typ,
             "source_file":str(path.relative_to(root)),
             "source_sha256":expected,
@@ -174,6 +195,12 @@ def render(project,plan,script,timeline,visual,audio,storyboard,
         if typ!="screenshot":
             vf.append(f"trim=start={start:.6f}:duration={duration:.6f}")
             vf.append("setpts=PTS-STARTPTS")
+        camera=clip.get("camera_preset","native")
+        if camera in ("medium","presenter","closeup","pov","reaction"):
+            # New framing of a real source, NOT a newly generated camera angle.
+            scale={"medium":1.14,"presenter":1.07,"closeup":1.42,
+                   "pov":1.24,"reaction":1.32}[camera]
+            vf.append(f"crop=iw/{scale}:ih/{scale}:(iw-ow)/2:(ih-oh)/2")
         vf.extend([f"fps={fps}",f"scale={w}:{h}:force_original_aspect_ratio=decrease",
                    f"pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:black","setsar=1","format=yuv420p"])
         cmd+=["-vf",",".join(vf),"-frames:v",str(clip["duration_frames"]),
