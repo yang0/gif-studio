@@ -1,31 +1,35 @@
 {
   "version": 1,
   "tts": {
-    "name": "REPLACE_WITH_ACTUAL_TTS",
+    "name": "edge-tts",
     "timeout_seconds": 600,
     "argv": [
-      "python",
-      "-m",
-      "your_real_tts_adapter",
-      "--text-file",
-      "{text_file}",
-      "--audio-out",
-      "{audio_out}"
+      "{python}",
+      "{skill_dir}/voice_production.py",
+      "--script",
+      "{script_file}",
+      "--out",
+      "{audio_out}",
+      "--voice",
+      "zh-CN-XiaoxiaoNeural"
     ]
   },
   "alignment": {
-    "name": "REPLACE_WITH_REAL_ALIGNER",
-    "timeout_seconds": 600,
+    "name": "stable-ts:base:zh",
+    "timeout_seconds": 1200,
     "argv": [
-      "python",
-      "-m",
-      "your_real_forced_aligner_adapter",
+      "{python}",
+      "{skill_dir}/forced_align.py",
+      "--script",
+      "{script_file}",
       "--audio",
       "{audio_file}",
-      "--text-file",
-      "{text_file}",
-      "--timeline-out",
-      "{timeline_out}"
+      "--out",
+      "{timeline_out}",
+      "--model",
+      "base",
+      "--language",
+      "zh"
     ]
   }
 }
