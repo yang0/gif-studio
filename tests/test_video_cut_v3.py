@@ -213,9 +213,9 @@ class MixedMediaEditorTests(unittest.TestCase):
                           {key:True for key in
                            ("semantic","pacing","continuity","subtitles","audio")})
 
-    def test_unsupported_data_motion_is_not_misrepresented_as_video(self):
+    def test_data_motion_requires_real_export_and_provenance(self):
         self.visual["shots"][1]["media_type"]="data_motion"
-        with self.assertRaisesRegex(ValueError,"real supported renderer"):
+        with self.assertRaisesRegex(ValueError,"Source missing|provenance"):
             compile_plan(self.root,self.script,self.timeline,self.visual,
                          self.audio,self.board,allow_mixed=True)
 
