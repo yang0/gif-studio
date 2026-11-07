@@ -17,7 +17,7 @@ from audio_timeline import sha256
 from visual_plan import sha256_json
 from candidate_pool import add
 from video_cut import compile_plan, render, validate_compiled
-from audio_subtitles import build as build_srt
+from audio_subtitles import generate as generate_srt
 
 class MixedMediaEditorTests(unittest.TestCase):
     def setUp(self):
@@ -64,6 +64,7 @@ class MixedMediaEditorTests(unittest.TestCase):
            "visual_event":"Still screenshot provides exact evidence","cut_reason":"Show original document"}]}
         self.board={"project_title":"Fixture","fps":20,"width":540,"height":960,
                     "shots":[{"id":"shot-01","duration_sec":2,"narration":"开始演示解释步骤"}]}
+        (self.root/"script.json").write_text(json.dumps(self.script,ensure_ascii=False),encoding="utf-8")
         (self.root/"storyboard.json").write_text(json.dumps(self.board,ensure_ascii=False),encoding="utf-8")
         (self.root/"audio-timeline.json").write_text(json.dumps(self.timeline,ensure_ascii=False),encoding="utf-8")
         (self.root/"visual-plan.json").write_text(json.dumps(self.visual,ensure_ascii=False),encoding="utf-8")
@@ -86,7 +87,7 @@ class MixedMediaEditorTests(unittest.TestCase):
         self.assertEqual([0,12,26],[x["start_frame"] for x in plan["clips"]])
         self.assertEqual(40,plan["total_frames"])
         srt=self.root/"captions.srt"
-        srt.write_text(build_srt(self.timeline,self.script,self.audio),encoding="utf-8")
+        generate_srt(self.root,self.root/"script.json",self.root/"audio-timeline.json",self.audio,srt)
         result=render(self.root,plan,self.script,self.timeline,self.visual,
                       self.audio,self.board,self.root/"preview.mp4",subtitles=srt,
                       allow_mixed=True)
@@ -100,6 +101,23 @@ class MixedMediaEditorTests(unittest.TestCase):
         streams=json.loads(raw)["streams"]
         self.assertIn("audio",[s["codec_type"] for s in streams])
         self.assertIn("video",[s["codec_type"] for s in streams])
+
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"),
+                         "FFmpeg required for actual video fixture")
+    def test_refuses_subtitle_tampering(self):
+        self.create_video()
+        plan=compile_plan(self.root,self.script,self.timeline,self.visual,
+                          self.audio,self.board,allow_mixed=True)
+        srt=self.root/"captions.srt"
+        generate_srt(self.root,self.root/"script.json",self.root/"audio-timeline.json",
+                     self.audio,srt)
+        srt.write_text("1\n00:00:00,000 --> 00:00:00,600\nChanged words\n",
+                       encoding="utf-8")
+        with self.assertRaisesRegex(ValueError,"Invalid SRT"):
+            render(self.root,plan,self.script,self.timeline,self.visual,
+                   self.audio,self.board,self.root/"tampered.mp4",subtitles=srt,
+                   allow_mixed=True)
+        self.assertFalse((self.root/"tampered.mp4").exists())
 
     @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"),
                          "FFmpeg required for actual video fixture")
