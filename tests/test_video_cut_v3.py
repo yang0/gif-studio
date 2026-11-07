@@ -214,6 +214,12 @@ class MixedMediaEditorTests(unittest.TestCase):
         self.assertEqual([],validate_director(director,self.timeline,self.visual))
         (self.root/"director-v2.json").write_text(
             json.dumps(director,ensure_ascii=False),encoding="utf-8")
+        from project_flow import init
+        from production_run import run_stage
+        init(self.root)
+        directed=run_stage(self.root,"director")
+        self.assertEqual("semantic_cuts_prepared_unreviewed",directed["status"])
+        self.assertTrue((self.root/"build"/"director"/"semantic-cut-draft.json").is_file())
         plan=compile_plan(self.root,self.script,self.timeline,self.visual,
                           self.audio,self.board,allow_mixed=True)
         self.assertEqual(sha256_json(director),plan["director_plan_sha256"])
