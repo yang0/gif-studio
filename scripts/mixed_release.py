@@ -6,6 +6,7 @@ hash-bound director review; the full MP4 needs a separate final listen/watch.
 """
 import argparse
 import json
+import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from audio_timeline import sha256
@@ -99,11 +100,19 @@ def gate(project,plan,script,timeline,visual,audio,storyboard,subtitles,preview)
                          "source_sha256":clip["source_sha256"]})
     return evidence
 
-def release(project,plan,script,timeline,visual,audio,storyboard,subtitles,preview):
+def release(project,plan,script,timeline,visual,audio,storyboard,subtitles,preview,out=None):
     evidence=gate(project,plan,script,timeline,visual,audio,storyboard,subtitles,preview)
     root=Path(project).resolve()
+    destination=Path(out).resolve() if out else root/"build"/"formal-mixed"/"final.mp4"
+    destination.parent.mkdir(parents=True,exist_ok=True)
+    if destination.exists():
+        raise FileExistsError("Formal mixed video exists; save a new version")
+    if destination==Path(preview).resolve():
+        raise ValueError("Formal delivery file must differ from its unreviewed preview")
+    shutil.copyfile(preview,destination)
     source_files={
-        "video":Path(preview).resolve(),
+        "video":destination,
+        "preview":Path(preview).resolve(),
         "audio":Path(audio).resolve(),
         "subtitles":Path(subtitles).resolve(),
         "script":root/"script.json",
@@ -164,6 +173,7 @@ def main():
     mode.add_argument("--verify",action="store_true")
     p.add_argument("--shot");p.add_argument("--reviewer");p.add_argument("--notes")
     p.add_argument("--preview")
+    p.add_argument("--out",help="Formal MP4 destination; default project/build/formal-mixed/final.mp4")
     for key in CHECKS:
         p.add_argument("--"+key+"-pass",action="store_true")
     a=p.parse_args()
@@ -183,7 +193,7 @@ def main():
                            load(root/"audio-timeline.json"),load(root/"visual-plan.json"),
                            root/"audio"/"voiceover.wav",load(root/"storyboard.json"),
                            root/"subtitles"/"captions.srt",
-                           a.preview or root/"build"/"mixed-preview.mp4")
+                           a.preview or root/"build"/"mixed-preview.mp4",a.out)
     print(json.dumps(result,ensure_ascii=False,indent=2))
 
 if __name__=="__main__":
