@@ -9,6 +9,9 @@
 已落地（尚非完整自动生产器）：
 
 - `scripts/audio_timeline.py`：检查完整音轨 SHA、语句级毫秒区间、原文一致性和非伪造的对齐来源。
+- `scripts/voice_pipeline.py`：可配置的整段真实 TTS + 声学对齐命令执行器，失败可重用已有音轨。
+- `scripts/voice_production.py`、`scripts/forced_align.py`：可选 edge-tts 和 stable-ts 实际 Provider（需要联网/下载模型/安装额外依赖），不能把离线 CI 当成真实生成验收。
+- `scripts/production_run.py`：带显式联网/模型授权开关的分阶段可恢复执行入口。
 - `scripts/visual_plan.py`：按实际语音段构建 A/B-roll 视觉编排校验，检查覆盖、时间线空隙及错误镜头类型。
 - `scripts/project_flow.py`：统一项目清单和阶段 `init/status/plan/validate`，是只读诊断/依赖检查，而不是生成器。
 - `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。

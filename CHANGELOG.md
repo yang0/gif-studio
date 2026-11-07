@@ -13,7 +13,8 @@
 - Added reference-pack fingerprint validation (character front/side/back/stroke/scene) and actual GIF-generator handoff/ingest adapter; no fabricated model calls.
 - Added regression tests for invalid alignment, narration mismatch, visual gaps, reference mutation and generation receipts.
 - Added audio-timed `visual_to_sequence.py` compiler from verified real GIF candidates into legacy frame-accurate EDL, with stale revision checks.
-- Full TTS, actual forced aligner, mixed-media renderer and release-quality sample remain open.
+- Added command-based `voice_pipeline.py`, optional real `edge-tts` full-track synthesis and `stable-ts` forced alignment implementations plus opt-in `production_run.py` stage runner. Providers need actual runtime dependencies/authorization; CI tests use mocks.
+- Mixed-media renderer and release-quality sample remain open.
 
 ## [2.3.0-candidate-release-alpha] - 2026-11-07
 - Added independent per-candidate GIF technical/visual approval records, including contact-sheet and source provenance.

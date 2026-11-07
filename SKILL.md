@@ -18,6 +18,8 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 先创建项目清单：`python3 scripts/project_flow.py init --project project`，以后用 `status/plan/validate` 检查阶段；该命令目前提供统一的**只读检查入口**，不是已经完成自动 TTS/GIF 生成的全功能执行器。
 
+真实配音可通过 `scripts/voice_pipeline.py --project project --providers project/voice-providers.json` 调用配置好的真实 TTS 和强制对齐程序。默认示例模板可接入可选的 edge-tts + stable-ts（需自行安装网络服务/模型），或通过 `scripts/production_run.py --project project --until sequence --allow-network-tts --allow-alignment-model` 逐阶段恢复。在线调用必须用户授权，不得将测试静音音轨视为有效口播。**整段一次合成，声学失败时重用已有音轨。** 两条入口二选一，不要互相覆盖音轨。真正发音自然性仍需实际试听。详见 references/voice-provider-contract.md。
+
 真实配音必须整段生成或导入，不能拿单元测试用的音轨充数。使用 `scripts/audio_timeline.py` 校验来自实际 forced aligner 或人工逐句核对的 `audio-timeline.json`；禁止编造时间码。再使用 `scripts/visual_plan.py` 校验 `visual-plan.json`，根据真实时间码决定情景/人物 A-roll 与知识/原理 B-roll 的视觉职责、镜头长度及转场理由。
 
 每个视觉片段选好真实 GPT GIF 候选后，运行 `scripts/visual_to_sequence.py --project project --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --visual-plan project/visual-plan.json --storyboard project/storyboard.json`。它会以毫秒时间码直接生成已有 `sequence.json v2` 格式的**未审核**帧级镜头计划，禁止按字数猜镜头秒数；若真实 GIF 无法覆盖所需时间，必须准备更多素材，而不是自动冻结。随后仍按旧版候选审核、预览和正式交付门禁执行。
