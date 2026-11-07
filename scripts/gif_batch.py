@@ -159,8 +159,8 @@ def execute_one(project, entry, command, caps, timeout, max_attempts):
         result={"key":key,"status":"blocked","error":"Input changed since prior run; use a new candidate ID"}
         atomic_json(status,result)
         return result
-    attempt=saved.get("attempts",0) if saved.get("status") in ("failed","interrupted") else 0
-    if saved.get("status") in ("failed","interrupted") and attempt>=max_attempts:
+    attempt=saved.get("attempts",0) if saved.get("status") in ("failed","interrupted","running") else 0
+    if saved.get("status") in ("failed","interrupted","running") and attempt>=max_attempts:
         result={"key":key,"status":"attempts_exhausted","attempts":attempt,"input_sha256":input_hash}
         atomic_json(status,result)
         return result
@@ -227,6 +227,7 @@ def sha256_json(obj):
              separators=(",",":")).encode("utf-8")).hexdigest()
 
 def run(project,manifest,command,workers=2,timeout=120,max_attempts=2):
+    checked_command(command)
     if not 1<=workers<=MAX_WORKERS:
         raise ValueError("workers must be 1..4")
     if not 1<=max_attempts<=MAX_ATTEMPTS:
@@ -252,13 +253,17 @@ def main():
     p=argparse.ArgumentParser()
     p.add_argument("--project",required=True)
     p.add_argument("--tasks",required=True)
-    p.add_argument("--backend",required=True,help="JSON array of executable and arguments; no shell execution")
+    backend=p.add_mutually_exclusive_group(required=True)
+    backend.add_argument("--backend",help="JSON array of executable and arguments; no shell execution")
+    backend.add_argument("--backend-file",help="JSON file containing a command array (easier for Windows)")
     p.add_argument("--workers",type=int,default=2)
     p.add_argument("--timeout",type=int,default=120)
     p.add_argument("--max-attempts",type=int,default=2)
     args=p.parse_args()
+    command=(json.loads(args.backend) if args.backend is not None
+             else json.loads(Path(args.backend_file).read_text(encoding="utf-8")))
     result=run(args.project,json.loads(Path(args.tasks).read_text(encoding="utf-8")),
-               json.loads(args.backend),args.workers,args.timeout,args.max_attempts)
+               command,args.workers,args.timeout,args.max_attempts)
     print(json.dumps(result,ensure_ascii=False,indent=2))
     if result["ingested"]!=result["total"]:
         raise SystemExit(1)
