@@ -47,6 +47,17 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
     faults=validate_visual(visual,timeline,script,audio)
     if faults:
         raise ValueError("Visual plan invalid: "+"; ".join(faults))
+    director_path=root/"director-v2.json"
+    director=None
+    directed={}
+    if director_path.is_file():
+        from visual_director import validate as director_validate
+        director=json.loads(director_path.read_text(encoding="utf-8"))
+        problems=[x for x in director_validate(director,timeline,visual)
+                  if not x.endswith("(warning)")]
+        if problems:
+            raise ValueError("Semantic director plan invalid/stale: "+"; ".join(problems))
+        directed={x["shot_id"]:x for x in director["shots"]}
     fps=storyboard["fps"]
     if type(fps)!=int or not 1<=fps<=60:
         raise ValueError("Invalid output fps")
@@ -62,6 +73,13 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
         typ=scene["media_type"]
         if typ not in ("gpt_gif","screen_recording","screenshot","data_motion"):
             raise ValueError(f"{scene['id']}: {typ} needs a real supported renderer")
+        if director is not None:
+            instruction=directed[scene["id"]]
+            requested=instruction["preferred_media"]
+            compatible=(requested==typ or
+                        (requested=="original_animation" and typ=="data_motion"))
+            if not compatible:
+                raise ValueError(f"{scene['id']}: editor media {typ} differs from director decision {requested}")
         if typ!="gpt_gif" and not allow_mixed:
             raise ValueError("Mixed-media video requires explicit --allow-mixed-media")
         if typ=="gpt_gif":
@@ -160,7 +178,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
         cursor+=c["duration_frames"]
     if abs(cursor/fps-timeline["duration_ms"]/1000)>.035:
         raise ValueError("Visual frame total differs from real narration")
-    return {"version":1,"kind":"audio_first_video_preview",
+    result={"version":1,"kind":"audio_first_video_preview",
             "fps":fps,"width":width,"height":height,"clips":clips,
             "total_frames":cursor,
             "audio_sha256":sha256(audio),
@@ -168,6 +186,9 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
             "visual_plan_sha256":sha256_json(visual),
             "storyboard_sha256":stable_digest(storyboard),
             "status":"UNREVIEWED_MIXED_PREVIEW"}
+    if director is not None:
+        result["director_plan_sha256"]=sha256_json(director)
+    return result
 
 def validate_compiled(root,plan,audio,script,timeline,visual,storyboard,allow_mixed):
     expected=compile_plan(root,script,timeline,visual,audio,storyboard,allow_mixed)
