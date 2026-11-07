@@ -53,3 +53,5 @@ python scripts/video_cut.py --project project --preview --allow-mixed-media --su
 - 仍需导演实际检查画面与口播语义、画面主体连续性、中文字幕可读性、音量、信息准确性和动作切点。技术测试无法验证这些质量标准。
 - 字幕可以直接使用经过真实音频对齐得到的 SRT，不根据每镜长度平均猜时间。
 - `screen_recording`、`screenshot` 需要用户合法获得/使用的素材；未自动获得第三方版权许可。
+
+明确：视频制作不要求强制生成新 GIF，混合媒体是 v3 的正当使用场景；`--allow-mixed-media` 是当前预览器的显式安全开关，不表示强制使用任何外部模型或号池。

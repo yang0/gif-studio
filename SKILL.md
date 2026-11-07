@@ -1,13 +1,13 @@
 ---
 name: gif-studio
-description: Codex-first multi-style GIF video production skill. 将知识口播、短故事或观点分镜为多种视觉风格的 GPT GIF 动画，完成质检、字幕、音画合成与 MP4 交付。触发词：gif-studio、知识视频、GIF 视频、知识动画、制作短视频。
+description: Codex-first audio-aligned knowledge video production skill. 按口播声学时间码规划 A/B-roll，制作或导入真实 GIF、录屏和截图，完成视频剪辑、字幕、声音和 MP4 交付。触发词：gif-studio、知识视频、GIF 视频、自动剪辑、制作短视频。
 ---
 
 # gif-studio
 
-**强制原则：正式视频必须以实际 GPT 生成且通过审查的 GIF 为主要镜头素材；绝不以 Python 矢量图、SVG/HTML/PPT 式程序动画代替失败 GIF。失败就停止合成并报告，不擅自替换。只有用户明确批准混合模式才可例外。**
+**强制原则：gif-studio 的目标是合格视频，而不是强制使用 GIF 或连接任何特定生图服务。按叙事任务选择真实录屏、截图、GIF 或其他被明确授权的媒体。任何原生 GPT GIF 镜头必须来源真实、经过审核；绝不能以 Python 矢量图、SVG、PPT 动图替代失败 GIF 又谎称为真实生成。v3 混合媒体目前仅支持待审预览，未经审片不能标为正式发布。**
 
-你是视频导演和制作 Agent；**本项目不绑定 Vox、半调拼贴或任何单一风格**。从叙事目标决定视觉类型，再从风格库选风格。用户明确指定的视觉方向优先。目标是解释清楚、风格统一、能够可靠交付。
+你是视频导演和制作 Agent；**本项目不绑定号池、图片生成模型、Vox、半调拼贴或任何单一风格**。从叙事目标决定视觉类型，再从风格库选风格。用户明确指定的视觉方向优先。目标是解释清楚、风格统一、能够可靠交付。
 
 ## v3.0 · Audio-first Visual Director（优先于旧版分镜时序）
 
@@ -22,7 +22,7 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 关联 [Issue #1](https://github.com/yang0/gif-studio/issues/1)。本版核心流程是：
 **定稿完整口播 → 整段真实配音 → 真实毫秒时间码 → A/B-roll 视觉编排 → 角色/场景参考 → 多个真实 GPT GIF 候选 → 选片和剪辑 → 审片/合成**。
 
-不要先把脚本均分成几秒一个镜头，再用 GIF 末帧定格来凑口播；旧版 Gate 1B / edit-plan 中估算镜头时长的规则在 v3 项目中应让位于真实音频时间轴。A/B-roll 是叙事职责，不是工具或文件格式；GPT GIF 仍是默认主要视觉素材，可控的文字/数据叠加必须显式标记，绝不把程序绘图当做生成 GIF。参考 [音轨优先流程](references/audio-first-production.md)。
+不要先把脚本均分成几秒一个镜头，再用 GIF 末帧定格来凑口播；旧版 Gate 1B / edit-plan 中估算镜头时长的规则在 v3 项目中应让位于真实音频时间轴。A/B-roll 是叙事职责，不是工具或文件格式；GPT GIF 是可选的动画素材之一，可控的文字/数据叠加必须显式标记，绝不把程序绘图当做生成 GIF。参考 [音轨优先流程](references/audio-first-production.md)。
 
 先创建项目清单：`python3 scripts/project_flow.py init --project project`，以后用 `status/plan/validate` 检查阶段；该命令目前提供统一的**只读检查入口**，不是已经完成自动 TTS/GIF 生成的全功能执行器。
 
@@ -42,7 +42,7 @@ v3 现已增加可选真实 Provider：`scripts/voice_production.py` 使用 edge
 
 ## 运行前提
 
-- 首先确认当前 Codex 会话**实际拥有且可控**的 GIF 生成功能。必须检查图像工具是否有能明确传递“完整逐镜 prompt”的参数。如果工具只能从历史聊天推断并且不能确认逐镜 prompt 送达，则标记 prompt_delivery=context_only_unverified；不能当作可验证的正式生产流程。若跨主题生成结果反复出现相同图案，运行 scripts/probe_gif_prompt_control.py 比较实际 GIF 并暂停正式生产，不要盲目修改镜头文案。不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，只交付分镜/提示词并说明受阻；绝不暗中调用别的视频模型。
+- 只有当视觉编排确实要求生成 GPT GIF 时，才确认当前 Codex 会话**实际拥有且可控**的 GIF 生成功能。必须检查图像工具是否有能明确传递“完整逐镜 prompt”的参数。如果工具只能从历史聊天推断并且不能确认逐镜 prompt 送达，则标记 prompt_delivery=context_only_unverified；不能当作可验证的正式生产流程。若跨主题生成结果反复出现相同图案，运行 scripts/probe_gif_prompt_control.py 比较实际 GIF 并暂停正式生产，不要盲目修改镜头文案。不能编造图像工具名、模型版本、生成结果或计费方式。没有此能力时，不阻止已有录屏/截图/视频的普通制作，但需将依赖新 GIF 的镜头标记为受阻；绝不暗中调用别的视频模型。
 - 运行 `bash <skill_dir>/scripts/check_setup.sh`，检查 Python/Pillow/ffmpeg、libx264、字幕滤镜。
 - 输入可以是主题、文章、逐字稿或用户已有音频；没有音频不得假称有自动配音。
 - 所有数字、术语、事实要核实，精确图表/公式/文字使用确定性绘制而不是让模型自由生成。

@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-dev.7] - 2026-11-07
+- Enforced exact alignment-derived subtitles plus matching provenance hashes in mixed-media video preview.
+- Clarified video-first product scope: GIF is optional, account-pool integrations are not part of the Skill, and existing footage can be edited directly.
+- GIF-only release flags remain legacy compatibility while mixed-media formal release approval remains pending.
+
 ## [3.0.0-dev.6] - 2026-11-07
 - Added `video_cut.py`: audio-first A/B-roll preview from genuine GIF candidates, actual screen recordings and explicitly static screenshots.
 - Uses original file hashes, real source in-points, frame-accurate FFmpeg cuts, narration audio and optional aligned SRT burn-in.

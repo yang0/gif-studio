@@ -1,6 +1,6 @@
 # gif-studio 🎬
 
-**基于 Codex 中实际可用的 GPT GIF 功能，制作多风格知识类与叙事类短视频。** 不绑定 Vox、半调拼贴或任何一种视觉模板。
+**基于 Codex 的知识视频制作 Skill：从口播、A/B-roll 到素材剪辑、字幕、音效与 MP4 交付。** 支持已有录屏、截图、真实 GIF，视内容选择合适素材，不绑定号池、单一模型或风格模板。
 
 ## v3.0 研发中 · 音频优先的知识视频生产
 
@@ -88,9 +88,9 @@ python3 scripts/gif_batch.py --project project --tasks project/gif-batch.json --
 
 候选只被登记为 `unreviewed`，仍需要真实查看动画、单候选质量审核和导演选片。生成任务与项目正式发布审核彼此独立。
 
-## 核心规则：GPT GIF ONLY
+## 核心原则：真实素材、正确表达、明确来源
 
-正式视频**不能用蹩脚的矢量动画、PPT 动图或本地程序化示意图替换 GPT GIF**。如果生成跑题或质量不过关，立即停止正式合成、保留失败 GIF 和 QA 记录。默认 `--asset-mode gpt-only` 在代码层拦截程序化镜头。仅当用户明确授权混合模式，才能指定 `--asset-mode mixed`。ffmpeg 仍用于转码、字幕、音频，不负责替代主要视觉素材。
+视频可以使用真实录屏、截图、GIF 和其他经审核的素材，不要求每条视频都生成 GIF。**只有当镜头明确要求 GPT GIF 时，不能拿程序化矢量动画、PPT 静态图替代失败的 GIF，并虚报为生成素材。** 历史 `compose_video.py --asset-mode gpt-only` 是旧版 GIF-only 正式合成规则，不能代表整个 Skill 只能使用 GIF；v3 混合媒体视频预览必须显式 `--allow-mixed-media`，正式发布还需独立验收实现。
 
 ## 运行时工具限制与严格画幅验收
 
