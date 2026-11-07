@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "character_id": "character-01",
+  "character_description": "固定头身比/发型/服装色/面部特征，具体填写",
+  "references": {
+    "front": {
+      "file": "references/character/front.png",
+      "sha256": "REAL_SHA"
+    },
+    "side": {
+      "file": "references/character/side.png",
+      "sha256": "REAL_SHA"
+    },
+    "back": {
+      "file": "references/character/back.png",
+      "sha256": "REAL_SHA"
+    },
+    "stroke_detail": {
+      "file": "references/character/stroke-detail.png",
+      "sha256": "REAL_SHA"
+    },
+    "scene": {
+      "file": "references/character/scene.png",
+      "sha256": "REAL_SHA"
+    }
+  }
+}

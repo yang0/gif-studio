@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "tool": "ACTUAL_TOOL_NAME",
+  "output_reference": "ACTUAL_RESPONSE_ID",
+  "prompt_sha256": "SHA_OF_EXACT_SENT_PROMPT",
+  "reference_pack_sha256": "SHA_OF_REFERENCE_PACK_IF_USED",
+  "prompt_delivery": "context_only_unverified"
+}
