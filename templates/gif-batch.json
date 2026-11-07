@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "shot_id": "shot-01",
+      "candidate_id": "wide",
+      "prompt": "prompts/shot-01-wide.txt",
+      "reference_pack": "reference-pack.json",
+      "notes": "Establishing shot with clear entering action"
+    },
+    {
+      "shot_id": "shot-01",
+      "candidate_id": "detail",
+      "prompt": "prompts/shot-01-detail.txt",
+      "reference_pack": "reference-pack.json",
+      "notes": "Closer visible action, not duplicate wide shot"
+    }
+  ]
+}
