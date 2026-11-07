@@ -145,6 +145,15 @@ def inspect(video,plan=None,subtitles=None):
                           "shot_id":observations[-1]["shot_id"],
                           "evidence":f"Decoded-frame normalized difference {delta:.4f} at 20% vs 80% of {duration:.2f}s; deliberate stills may be valid"})
         if i:
+            seam_time=start/fps
+            left=frame(video,max(.01,seam_time-.6/fps))
+            right=frame(video,min(info["duration_s"]-.02,seam_time+.6/fps))
+            seam=difference(left,right)
+            observations[-1]["cut_seam_frame_difference"]=round(seam,5)
+            if seam>.43:
+                risks.append({"kind":"sharp_visual_seam_review","severity":"medium",
+                              "shot_id":observations[-1]["shot_id"],
+                              "evidence":f"Two actual frames across {seam_time:.3f}s cut differ by {seam:.4f}; may be an intentional hard cut, but review action/direction/scale continuity"})
             neighbor=difference(samples[-2],first)
             if neighbor<.045:
                 risks.append({"kind":"adjacent_visual_similarity","severity":"medium",
