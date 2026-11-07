@@ -118,7 +118,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
         if duration is not None and (source_in/1000+count/fps)>duration+1/fps+.001:
             raise ValueError(f"{scene['id']}: source footage too short, cannot freeze to fill")
         camera=scene.get("camera_preset","native")
-        allowed={"native","presenter","medium","closeup","pov","reaction"}
+        allowed={"native","presenter","wide","medium","closeup","reaction"}
         if camera not in allowed:
             raise ValueError(f"{scene['id']}: unknown camera preset")
         if camera!="native" and scene["roll"]!="A":
@@ -127,8 +127,21 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
             raise ValueError("Still screenshot cannot become fake A-roll camera animation")
         if camera!="native" and not str(scene.get("character_id","")).strip():
             raise ValueError("A-roll camera requires stable character_id")
+        viewpoint=scene.get("viewpoint","main_character" if scene["roll"]=="A" else "content")
+        if viewpoint not in ("main_character","supporting_character","presenter","first_person","content"):
+            raise ValueError(f"{scene['id']}: unknown viewpoint")
+        if scene["roll"]=="B" and viewpoint!="content":
+            raise ValueError("B-roll must not claim a character viewpoint")
+        if scene["roll"]=="A" and viewpoint=="first_person":
+            if (scene.get("role")!="point_of_view" or
+                scene.get("source_perspective")!="verified_first_person" or
+                camera!="native"):
+                raise ValueError("First-person A-roll requires verified actual POV source; crop is not POV")
+        if scene["roll"]=="A" and viewpoint=="supporting_character" and not scene.get("character_id"):
+            raise ValueError("Supporting-character A-roll requires character_id")
         clips.append({
             "id":"cut-"+str(i+1).zfill(3),
+            "viewpoint":viewpoint,
             "camera_preset":camera,
             "character_id":scene.get("character_id"),
             "role":scene["roll"],"media_type":typ,
@@ -196,10 +209,10 @@ def render(project,plan,script,timeline,visual,audio,storyboard,
             vf.append(f"trim=start={start:.6f}:duration={duration:.6f}")
             vf.append("setpts=PTS-STARTPTS")
         camera=clip.get("camera_preset","native")
-        if camera in ("medium","presenter","closeup","pov","reaction"):
+        if camera in ("medium","presenter","closeup","reaction"):
             # New framing of a real source, NOT a newly generated camera angle.
             scale={"medium":1.14,"presenter":1.07,"closeup":1.42,
-                   "pov":1.24,"reaction":1.32}[camera]
+                   "reaction":1.32}[camera]
             vf.append(f"crop=iw/{scale}:ih/{scale}:(iw-ow)/2:(ih-oh)/2")
         vf.extend([f"fps={fps}",f"scale={w}:{h}:force_original_aspect_ratio=decrease",
                    f"pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:black","setsar=1","format=yuv420p"])
