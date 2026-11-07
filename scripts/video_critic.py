@@ -45,6 +45,38 @@ def difference(a,b):
     delta=ImageChops.difference(a,b)
     return sum(ImageStat.Stat(delta).mean)/(3*255)
 
+def audio_levels(video):
+    """Loudness evidence only: an AAC track can be silence or machine speech."""
+    proc=subprocess.run(["ffmpeg","-hide_banner","-nostats","-i",str(video),
+        "-vn","-af","volumedetect","-f","null","-"],
+        capture_output=True,text=True,check=False)
+    if proc.returncode:
+        return {"available":False,"error":proc.stderr[-300:]}
+    match=re.search(r"mean_volume:\s*(-?inf|-?[\d.]+)\s*dB",proc.stderr)
+    peak=re.search(r"max_volume:\s*(-?inf|-?[\d.]+)\s*dB",proc.stderr)
+    def value(found):
+        if not found or found.group(1)=="-inf":
+            return None
+        return float(found.group(1))
+    return {"available":True,"mean_db":value(match),"peak_db":value(peak),
+            "speech_intelligibility_verified":False,
+            "natural_narration_verified":False}
+
+def composition_risk(picture):
+    """Estimate large uniform empty borders; never claim actual subject size."""
+    grayscale=picture.convert("L")
+    w,h=grayscale.size
+    border=Image.new("L",(w,h))
+    top=grayscale.crop((0,0,w,int(h*.16)))
+    bottom=grayscale.crop((0,int(h*.84),w,h))
+    # If both edge bands have very low variance while the central field
+    # has detail, this might be a card-with-small-center composition.
+    center=grayscale.crop((int(w*.2),int(h*.2),int(w*.8),int(h*.8)))
+    var_center=ImageStat.Stat(center).stddev[0]
+    var_top=ImageStat.Stat(top).stddev[0]
+    var_bottom=ImageStat.Stat(bottom).stddev[0]
+    return var_top<5 and var_bottom<5 and var_center>20
+
 def inspect(video,plan=None,subtitles=None):
     video=Path(video).resolve()
     if not video.is_file():
@@ -56,6 +88,22 @@ def inspect(video,plan=None,subtitles=None):
     if not info["audio"]:
         risks.append({"kind":"missing_audio","severity":"high","shot_id":None,
                       "evidence":"ffprobe: no audio stream"})
+    loudness=audio_levels(video) if info["audio"] else {"available":False}
+    if loudness.get("available") and loudness.get("peak_db") is None:
+        risks.append({"kind":"silent_audio_track","severity":"high","shot_id":None,
+                      "evidence":"ffmpeg volumedetect found no meaningful audio peak; an AAC track alone is not narration"})
+    elif loudness.get("available") and loudness.get("mean_db") is not None and loudness["mean_db"]<-48:
+        risks.append({"kind":"very_low_audio","severity":"medium","shot_id":None,
+                      "evidence":f"Mean audio level {loudness['mean_db']} dB; listen and inspect real narration"})
+    if subtitles is None and info["audio"]:
+        risks.append({"kind":"subtitles_not_provided","severity":"medium","shot_id":None,
+                      "evidence":"No aligned SRT was supplied to this technical inspection; cannot attest caption quality"})
+    elif subtitles is not None and Path(subtitles).is_file():
+        from release_sequence import subtitle_issues
+        for problem in subtitle_issues(subtitles,info["duration_s"]):
+            risks.append({"kind":"subtitle_timing_risk","severity":"high","shot_id":None,
+                          "evidence":problem})
+
     if subtitles is not None and not Path(subtitles).is_file():
         risks.append({"kind":"missing_subtitles","severity":"high","shot_id":None,
                       "evidence":"Subtitle file path is absent"})
@@ -88,6 +136,10 @@ def inspect(video,plan=None,subtitles=None):
                              "camera_preset":clip.get("camera_preset","native"),
                              "static_source":clip.get("static_source",False)})
         samples.append(first)
+        if composition_risk(first):
+            risks.append({"kind":"uniform_margin_composition_risk","severity":"medium",
+                          "shot_id":observations[-1]["shot_id"],
+                          "evidence":"Top and bottom 16% have little visible detail vs center; check actual subject prominence and intentional negative space"})
         if duration>=2.5 and delta<.013:
             risks.append({"kind":"low_motion_risk","severity":"medium",
                           "shot_id":observations[-1]["shot_id"],
@@ -110,6 +162,7 @@ def inspect(video,plan=None,subtitles=None):
                           "evidence":f"actual {info['duration_s']:.3f}s, EDL {expected:.3f}s"})
     return {"version":AUDIT_VERSION,"status":"TECHNICAL_RISK_REPORT_UNREVIEWED",
             "video_sha256":sha256(video),"video":str(video),"technical":info,
+            "loudness_evidence":loudness,
             "source_plan_sha256":sha256_json(plan) if plan is not None else None,
             "observations":observations,"risks":risks,
             "cannot_assess":["subject prominence","knowledge truth","actual character identity",
