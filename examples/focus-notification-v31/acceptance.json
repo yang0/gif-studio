@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "topic": "手机通知为什么会打断专注？",
+  "status": "AWAITING_REAL_GOLDEN_SAMPLE",
+  "old_baseline": "../focus-notification-v3/quality-baseline.json",
+  "target_seconds": [
+    20,
+    30
+  ],
+  "required_real_evidence": [
+    "final_natural_chinese_narration_audio_and_actual_full_track_listen",
+    "verified_audio_timeline_from_real_recording",
+    "aligned_chinese_subtitles_with_audio_sha256",
+    "same_character_and_scene_continuity_in_actual_A_roll_footage",
+    "real_informative_causal_B_roll_with_provenance",
+    "variable_semantic_cut_timing_not_uniform_three_second_cards",
+    "complete_playable_MP4_and_exact_source_hashes",
+    "full_video_review_with_weighted_score_at_least_80_and_no_critical_failures",
+    "independent_final_release_approval"
+  ],
+  "actual_mp4": null,
+  "real_voice_review": null,
+  "actual_human_review": null,
+  "release_approved": false,
+  "notes": "Do not mark complete with synthetic audio, duplicated GIF cards or CI-only evidence"
+}
