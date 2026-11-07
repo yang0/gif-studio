@@ -179,32 +179,6 @@ class MixedMediaEditorTests(unittest.TestCase):
         from mixed_release import source_review, release,verify_release,CHECKS
         from final_review import sheet as inspect_final,approve as approve_final
         self.create_video()
-        plan=compile_plan(self.root,self.script,self.timeline,self.visual,
-                          self.audio,self.board,allow_mixed=True)
-        (self.root/"video-plan.json").write_text(json.dumps(plan),encoding="utf-8")
-        srt=self.root/"subtitles"/"captions.srt"
-        srt.parent.mkdir()
-        generate_srt(self.root,self.root/"script.json",self.root/"audio-timeline.json",
-                     self.audio,srt)
-        movie=self.root/"build"/"mixed-preview.mp4"
-        render(self.root,plan,self.script,self.timeline,self.visual,self.audio,self.board,
-               movie,subtitles=srt,allow_mixed=True)
-        with self.assertRaisesRegex(ValueError,"Unreviewed mixed shot"):
-            release(self.root,plan,self.script,self.timeline,self.visual,self.audio,
-                    self.board,srt,movie)
-        checks={k:True for k in CHECKS}
-        for clip in plan["clips"]:
-            source_review(self.root,clip,plan,"fixture reviewer",
-                          "Observed source media and checked footage, legibility and continuity",
-                          checks)
-        report=release(self.root,plan,self.script,self.timeline,self.visual,self.audio,
-                       self.board,srt,movie)
-        self.assertEqual("PENDING_FINAL_VIDEO_REVIEW",report["status"])
-        self.assertEqual(3,len(report["shots"]))
-        formal=self.root/"build"/"formal-mixed"/"final.mp4"
-        self.assertTrue(formal.is_file())
-        self.assertNotEqual(formal,movie)
-        inspect_final(self.root,formal,frames=3)
         # v3.1 opt-in requires a semantic director decision *and* a separate
         # explicitly declared full-video quality review before final signing.
         from visual_director import validate as validate_director
@@ -240,6 +214,32 @@ class MixedMediaEditorTests(unittest.TestCase):
         self.assertEqual([],validate_director(director,self.timeline,self.visual))
         (self.root/"director-v2.json").write_text(
             json.dumps(director,ensure_ascii=False),encoding="utf-8")
+        plan=compile_plan(self.root,self.script,self.timeline,self.visual,
+                          self.audio,self.board,allow_mixed=True)
+        (self.root/"video-plan.json").write_text(json.dumps(plan),encoding="utf-8")
+        srt=self.root/"subtitles"/"captions.srt"
+        srt.parent.mkdir()
+        generate_srt(self.root,self.root/"script.json",self.root/"audio-timeline.json",
+                     self.audio,srt)
+        movie=self.root/"build"/"mixed-preview.mp4"
+        render(self.root,plan,self.script,self.timeline,self.visual,self.audio,self.board,
+               movie,subtitles=srt,allow_mixed=True)
+        with self.assertRaisesRegex(ValueError,"Unreviewed mixed shot"):
+            release(self.root,plan,self.script,self.timeline,self.visual,self.audio,
+                    self.board,srt,movie)
+        checks={k:True for k in CHECKS}
+        for clip in plan["clips"]:
+            source_review(self.root,clip,plan,"fixture reviewer",
+                          "Observed source media and checked footage, legibility and continuity",
+                          checks)
+        report=release(self.root,plan,self.script,self.timeline,self.visual,self.audio,
+                       self.board,srt,movie)
+        self.assertEqual("PENDING_FINAL_VIDEO_REVIEW",report["status"])
+        self.assertEqual(3,len(report["shots"]))
+        formal=self.root/"build"/"formal-mixed"/"final.mp4"
+        self.assertTrue(formal.is_file())
+        self.assertNotEqual(formal,movie)
+        inspect_final(self.root,formal,frames=3)
         (self.root/"sequence.json").write_text('{"version":2}',encoding="utf-8")
         checks={key:True for key in ("semantic","pacing","continuity","subtitles","audio")}
         with self.assertRaisesRegex(ValueError,"v3.1 final approval requires"):
