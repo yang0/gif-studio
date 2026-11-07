@@ -12,6 +12,7 @@ from PIL import Image
 from candidate_pool import read, selection_status
 from inspect_gif import digest
 from verify_gif_asset import validate as validate_gif
+from candidate_review import status as candidate_review_status
 
 def esc(value):
     return html.escape(str(value), quote=True)
@@ -65,6 +66,9 @@ def make_html(project, storyboard=None, edit_plan=None, sequence=None):
             prompt_ref="prompts/"+rec["shot_id"]+"/"+rec["candidate_id"]+".txt"
             label="SELECTED" if is_selected else "ALTERNATIVE"
             technical="TECHNICAL CHECK PASS" if meta.get("pass") and not bad else "NEEDS ATTENTION"
+            review_state,review_reason=("not_reviewed","Storyboard required")
+            if storyboard:
+                review_state,review_reason=candidate_review_status(root,storyboard,rec["shot_id"],rec["candidate_id"])
             issues=bad+meta.get("issues",[])
             cards.append(f"""
             <article class="candidate {'chosen' if is_selected else ''}">
@@ -75,6 +79,7 @@ def make_html(project, storyboard=None, edit_plan=None, sequence=None):
               <div class="meta">{esc(meta.get('width','?'))}×{esc(meta.get('height','?'))}
                 · {esc(meta.get('frames','?'))} frames · {esc(meta.get('duration_sec','?'))}s</div>
               <div class="meta">Tool: {esc(rec['tool'])} · Ref: {esc(rec['reference'])}</div>
+              <div class="meta">Candidate QA: {esc(review_state)} · {esc(review_reason)}</div>
               <div class="meta">SHA: <code>{esc(rec['sha256'][:16])}…</code></div>
               {f'<p class="warning">{esc("; ".join(issues))}</p>' if issues else ''}
               <a href="{esc(prompt_ref)}" target="_blank">Read exact prompt</a>
