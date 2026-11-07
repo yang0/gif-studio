@@ -1,0 +1,4 @@
+# Optional voice production only; base GIF editing has no TTS dependency.
+edge-tts>=7,<9
+# For real forced alignment install stable-ts separately; heavyweight torch/whisper
+# dependencies and model downloads vary by OS/GPU environment.
