@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-dev.3] - 2026-11-07
+- Added visual_assets.py to derive distinct candidate prompt and batch manifests directly from verified A/B-roll visual plans and narration anchors.
+- Required real identity/style/scene reference pack for character A-roll and unique shot-specific motion/camera spec for every candidate.
+- Connected the production manifest to existing gif_batch.py executor (real external backend only), immutable prompts and project_flow asset-production diagnostics.
+- Added strict regression tests for duplicate candidate IDs, missing references, stale prompts and revised visual plans.
+- Real artistic quality, actual TTS/Whisper and public-ready sample remain pending, not inferred from unit tests.
+
+
 ## [3.0.0-dev.7] - 2026-11-07
 - Enforced exact alignment-derived subtitles plus matching provenance hashes in mixed-media video preview.
 - Clarified video-first product scope: GIF is optional, account-pool integrations are not part of the Skill, and existing footage can be edited directly.

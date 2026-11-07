@@ -29,6 +29,7 @@ python scripts/video_cut.py --project project --preview --allow-mixed-media --su
 - `scripts/visual_plan.py`：按实际语音段构建 A/B-roll 视觉编排校验，检查覆盖、时间线空隙及错误镜头类型。
 - `scripts/project_flow.py`：统一项目清单和阶段 `init/status/plan/validate`，是只读诊断/依赖检查，而不是生成器。
 - `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。
+- `scripts/visual_assets.py`：把已对齐的 A/B-roll 视觉编排自动编译成**不同景别、不同动作的** GIF 候选任务与完整提示词，A-roll 强制校验真实角色参考包；直接对接 gif_batch.py，支持可恢复的批量生成和素材状态检查。
 - `scripts/generator_adapter.py`：为真实 Codex GIF 生成准备完整提示词/参考包请求，并将实际输出与工具来源登记入候选池；不会自行发起虚构的 GPT API 请求。
 - `scripts/gif_batch.py`：对接真实本地 GIF 后端执行程序，最多四条候选并发、超时与有限重试、失败状态和哈希绑定的断点恢复；生成能力由实际可用的外部后端提供。
 - `scripts/visual_to_sequence.py`：把绑定真实音轨的毫秒级视觉计划编译成现有 `sequence.json` 自由剪辑草案，要求真实素材覆盖时长。
