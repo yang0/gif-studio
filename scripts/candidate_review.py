@@ -110,6 +110,8 @@ def status(project,storyboard,shot,candidate):
             return "stale","Visual approval no longer matches technical report or source"
         if any(review.get("checks",{}).get(key) is not True for key in CHECKS):
             return "stale","Incomplete visual approval"
+        if review.get("prompt_delivery")!=rec.get("prompt_delivery","context_only_unverified"):
+            return "stale","Candidate prompt delivery changed in catalog"
         if not review.get("reviewer") or not review.get("notes"):
             return "stale","Reviewer evidence missing"
         if review.get("prompt_delivery")!="explicit_tool_argument":
@@ -124,8 +126,8 @@ def approve_candidate(project,storyboard,shot,candidate,reviewer,notes,checks,
         raise ValueError("Named reviewer and substantive observed visual notes required")
     if any(checks.get(k) is not True for k in CHECKS):
         raise ValueError("All five candidate visual checks must be explicitly true")
-    if prompt_delivery!="explicit_tool_argument":
-        raise ValueError("Formal GPT GIF candidate requires actual explicit prompt tool argument")
+    if prompt_delivery!="explicit_tool_argument" or rec.get("prompt_delivery","context_only_unverified")!="explicit_tool_argument":
+        raise ValueError("Formal GPT GIF candidate requires explicitly documented prompt delivery at library ingestion")
     tech,approval=paths(project,shot,candidate)
     rec,_=identity(project,shot,candidate)
     ctx=context(project,storyboard,shot)
