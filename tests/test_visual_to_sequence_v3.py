@@ -81,6 +81,15 @@ class AudioToEditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"mixed-media renderer"):
             compile_sequence(self.root,self.script,self.audio,self.timeline,visual,self.board)
 
+    def test_edit_is_invalidated_after_visual_plan_change(self):
+        from sequence_cut import verify
+        seq=compile_sequence(self.root,self.script,self.audio,self.timeline,self.visual,self.board)
+        updated=json.loads(json.dumps(self.visual))
+        updated["shots"][1]["cut_reason"]="New editorial direction"
+        (self.root/"visual-plan.json").write_text(json.dumps(updated,ensure_ascii=False),encoding="utf-8")
+        issues=verify(self.root,seq,self.audio)
+        self.assertTrue(any("V3 source changed" in x for x in issues),issues)
+
     def test_audio_outside_visual_range_is_rejected(self):
         visual=json.loads(json.dumps(self.visual))
         visual["shots"][1]["end_ms"]=900
