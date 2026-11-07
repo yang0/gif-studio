@@ -76,6 +76,22 @@ def approve(project, video, reviewer, notes, checks):
         raise ValueError("Identify actual reviewer and provide substantive observations")
     if not info["audio_track_present"]:
         raise ValueError("No audio track; this is only a silent preview, not a finished narrated video")
+    formal=root/"build"/"formal-sequence"/"release-provenance.json"
+    if formal.is_file():
+        provenance=json.loads(formal.read_text(encoding="utf-8"))
+        if (provenance.get("status")!="PENDING_FINAL_VIDEO_REVIEW" or
+            provenance.get("video_sha256")!=info["sha256"] or
+            Path(provenance.get("video","")).resolve()!=Path(video).resolve()):
+            raise ValueError("Formal release provenance differs from reviewed video")
+        from candidate_review import paths as candidate_review_paths
+        from edit_plan import stable_digest
+        for source in provenance.get("sources",[]):
+            approved=candidate_review_paths(root,source["shot"],source["candidate"])[1]
+            if not approved.is_file() or sha256(approved)!=source["candidate_approval_sha256"]:
+                raise ValueError("Selected candidate review changed after render")
+        seq=root/"sequence.json"
+        if seq.is_file() and stable_digest(json.loads(seq.read_text(encoding="utf-8")))!=provenance.get("sequence_sha256"):
+            raise ValueError("Approved sequence changed since formal render")
     record={"status":"release_approved","video":info["video"],
             "sha256":info["sha256"],"reviewer":reviewer,
             "review_notes":notes,"checks":checks,
