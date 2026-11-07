@@ -71,6 +71,29 @@ class CriticAndRevisionTests(unittest.TestCase):
         self.assertEqual("HUMAN_REWORK_REQUIRED",result["status"])
         self.assertFalse(result["eligible_for_independent_final_review"])
 
+    def test_critic_rejects_invalid_edl_before_decoding(self):
+        invalid=[
+            ({"start_frame":-1}, "Invalid clip frame bounds"),
+            ({"start_frame":12}, "Non-contiguous clip timeline"),
+            ({"start_frame":25}, "Non-contiguous clip timeline"),
+            ({"duration_frames":0}, "Invalid clip frame bounds"),
+            ({"duration_frames":1000}, "extends beyond actual decoded movie"),
+        ]
+        for patch,message in invalid:
+            with self.subTest(patch=patch):
+                plan=copy.deepcopy(self.plan)
+                plan["clips"][0].update(patch)
+                with self.assertRaisesRegex(ValueError,message):
+                    inspect(self.video,plan)
+        plan=copy.deepcopy(self.plan)
+        plan["fps"]=True
+        with self.assertRaisesRegex(ValueError,"integer positive fps"):
+            inspect(self.video,plan)
+        plan=copy.deepcopy(self.plan)
+        plan["clips"][1]=None
+        with self.assertRaisesRegex(ValueError,"must be an object"):
+            inspect(self.video,plan)
+
     def test_changed_mp4_invalidates_evidence(self):
         mutated=self.root/"different.mp4"
         mutated.write_bytes(self.video.read_bytes()+b"changed")
