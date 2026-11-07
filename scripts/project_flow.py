@@ -157,6 +157,19 @@ def state(root):
                 entry("asset_library","ready" if not missing else "blocked",missing)
         except (ValueError,OSError,KeyError,TypeError) as exc:
             entry("asset_library","blocked",[str(exc)])
+    # Authoring guard: no SVG/vector/programmatic replacements for absent shots.
+    # This is *only* a file/provenance gate, never a claim of creative approval.
+    if loc["visual_plan"].is_file():
+        try:
+            from real_source_gate import inspect_media
+            source_report=inspect_media(root,json.loads(loc["visual_plan"].read_text(encoding="utf-8")))
+            source_issues=[str(gap["shot_id"])+": "+"; ".join(gap["issues"])
+                           for gap in source_report["gaps"]]
+            entry("real_visual_sources","ready" if not source_issues else "blocked",source_issues)
+        except (ValueError,OSError,KeyError,TypeError) as exc:
+            entry("real_visual_sources","blocked",[str(exc)])
+    else:
+        entry("real_visual_sources","missing",["Create actual sourced footage; no programmatic fallback"])
     mixed_plan=root/"video-plan.json"
     if mixed_plan.is_file():
         try:
