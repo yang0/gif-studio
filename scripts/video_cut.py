@@ -71,7 +71,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
     clips=[]
     for i,scene in enumerate(shots):
         typ=scene["media_type"]
-        if typ not in ("gpt_gif","screen_recording","screenshot","data_motion"):
+        if typ not in ("gpt_gif","screen_recording","real_video","original_animation","screenshot","data_motion"):
             raise ValueError(f"{scene['id']}: {typ} needs a real supported renderer")
         if director is not None:
             instruction=directed[scene["id"]]
@@ -94,7 +94,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
         else:
             path=inside(root,scene.get("source_file"))
             expected=scene.get("source_sha256")
-            if typ in ("screen_recording","data_motion") and path.suffix.lower() not in VIDEOS:
+            if typ in ("screen_recording","real_video","original_animation","data_motion") and path.suffix.lower() not in VIDEOS:
                 raise ValueError("Recording must be a real video file")
             if typ=="data_motion":
                 proof=Path(str(path)+".motion.json")
@@ -124,7 +124,7 @@ def compile_plan(project,script,timeline,visual,audio,storyboard,allow_mixed=Fal
             if not info.get("pass"):
                 raise ValueError("GIF cannot decode: "+"; ".join(info.get("issues",[])))
             duration=info["duration_sec"]
-        elif typ in ("screen_recording","data_motion"):
+        elif typ in ("screen_recording","real_video","original_animation","data_motion"):
             if not video_has_stream(path):
                 raise ValueError("Recording has no video stream")
             duration=video_duration(path)

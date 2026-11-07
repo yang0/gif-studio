@@ -11,7 +11,7 @@ from pathlib import Path
 from audio_timeline import validate as validate_audio, normalize, sha256
 
 ROLLS={"A","B"}
-MEDIA={"gpt_gif","screen_recording","screenshot","data_motion","text_overlay"}
+MEDIA={"gpt_gif","screen_recording","real_video","original_animation","screenshot","data_motion","text_overlay"}
 B_KINDS={"mechanism","comparison","process","evidence","data","text","demo"}
 A_KINDS={"presenter","character_action","supporting_character","emotion","transition","point_of_view"}
 
