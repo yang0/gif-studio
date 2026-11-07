@@ -205,11 +205,65 @@ class MixedMediaEditorTests(unittest.TestCase):
         self.assertTrue(formal.is_file())
         self.assertNotEqual(formal,movie)
         inspect_final(self.root,formal,frames=3)
-        # A legacy GIF-only EDL may coexist in an audio-first project.
+        # v3.1 opt-in requires a semantic director decision *and* a separate
+        # explicitly declared full-video quality review before final signing.
+        from visual_director import validate as validate_director
+        from video_critic import inspect as critic_inspect, review as critic_review
+        from visual_plan import sha256_json
+        director_shots=[]
+        for i,base in enumerate(self.visual["shots"]):
+            director_shots.append({
+              "shot_id":base["id"],"start_ms":base["start_ms"],
+              "end_ms":base["end_ms"],
+              "narrative_function":"establish" if i==0 else "explain_process",
+              "visual_strategy":["scene_acting","product_demonstration","mechanism_breakdown"][i],
+              "viewer_takeaway":f"Knowledge gained from actual scene {i}",
+              "scene_intent":f"Show meaningful activity in actual footage {i}",
+              "visual_subject":f"Real test source {i}",
+              "initial_state":f"Before actual action {i}",
+              "trigger_event":f"Physical action or reveal {i}",
+              "final_state":f"After observable action {i}",
+              "new_information":f"New information from image sequence {i}",
+              "cut_reason":f"Audio semantics require cut {i}",
+              "movement_type":"physical_action" if i==0 else "real_demonstration",
+              "source_policy":"use_existing",
+              "preferred_media":base["media_type"],
+              **({"performance":{"character_id":"fixture-character",
+                    "intention":"Work","action":"Do a real action",
+                    "emotion_change":"Focused to engaged",
+                    "prop_interaction":"Use an actual phone"}} if i==0 else {})
+            })
+        director={"version":2,"status":"DIRECTOR_DRAFT_UNREVIEWED",
+            "audio_timeline_sha256":sha256_json(self.timeline),
+            "visual_plan_sha256":sha256_json(self.visual),
+            "shots":director_shots}
+        self.assertEqual([],validate_director(director,self.timeline,self.visual))
+        (self.root/"director-v2.json").write_text(
+            json.dumps(director,ensure_ascii=False),encoding="utf-8")
         (self.root/"sequence.json").write_text('{"version":2}',encoding="utf-8")
+        checks={key:True for key in ("semantic","pacing","continuity","subtitles","audio")}
+        with self.assertRaisesRegex(ValueError,"v3.1 final approval requires"):
+            approve_final(self.root,formal,"fixture reviewer",
+                "Checked entire synthetic movie, this remains a fixture",checks)
+        critic=critic_inspect(formal,plan)
+        quality=self.root/"quality"
+        quality.mkdir()
+        (quality/"critic.json").write_text(json.dumps(critic),encoding="utf-8")
+        human=critic_review(critic,formal,"CI fixture reviewer",
+            "This is a signed fixture observation, not true evidence of publishable creative quality.",
+            {key:9 for key in ("content","visual","pacing","audio","continuity")},
+            {key:False for key in
+             ("knowledge_error","provenance_misrepresentation","severe_av_desync")},
+            watched_entire_video=True)
+        (quality/"human-review.json").write_text(json.dumps(human),encoding="utf-8")
+        forged=dict(human,weighted_score=2)
+        (quality/"human-review.json").write_text(json.dumps(forged),encoding="utf-8")
+        with self.assertRaisesRegex(ValueError,"weighted score"):
+            approve_final(self.root,formal,"fixture reviewer",
+                          "Observed synthetic full video but should not permit a changed score",checks)
+        (quality/"human-review.json").write_text(json.dumps(human),encoding="utf-8")
         signed=approve_final(self.root,formal,"fixture reviewer",
-            "Observed full synthetic test video and all placeholder tracks; CI does not prove quality",
-            {key:True for key in ("semantic","pacing","continuity","subtitles","audio")})
+            "Observed full synthetic test video and all placeholder tracks; CI does not prove quality",checks)
         self.assertEqual("release_approved",signed["status"])
         # Touch the existing screenshot: the recorded director and video
         # approval must no longer be usable.
