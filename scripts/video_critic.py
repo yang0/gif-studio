@@ -146,6 +146,40 @@ def review(report,video,reviewer,notes,scores,blocking_findings,watched_entire_v
             "eligible_for_independent_final_review":eligible,
             "note":"Human declaration, not independently verified observation or a replacement for final_review.py"}
 
+
+def validate_human_review(human,report):
+    """Check internal score consistency; a declaration is not a trusted signature."""
+    if not isinstance(human,dict):
+        return ["Human quality review must be an object"]
+    issues=[]
+    scores=human.get("scores",{})
+    findings=human.get("blocking_findings",{})
+    if not isinstance(scores,dict) or set(scores)!=set(WEIGHTS) or any(
+        type(v) not in (int,float) or not 0<=v<=10 for v in scores.values()):
+        return ["Human quality scores missing or invalid"]
+    if not isinstance(findings,dict) or set(findings)!=CHECKS or any(
+        type(v)!=bool for v in findings.values()):
+        return ["Human blocking findings invalid"]
+    weighted=round(sum(scores[k]*w for k,w in WEIGHTS.items())/10,2)
+    eligible=weighted>=80 and all(x>=6 for x in scores.values()) and not any(findings.values())
+    if human.get("video_sha256")!=report.get("video_sha256"):
+        issues.append("Human review applies to a different movie")
+    if human.get("technical_report_sha256")!=sha256_json(report):
+        issues.append("Human review applies to a different technical evidence report")
+    if human.get("weighted_score")!=weighted:
+        issues.append("Human weighted score was altered")
+    if human.get("eligible_for_independent_final_review") is not eligible:
+        issues.append("Human review eligibility is inconsistent")
+    if human.get("status")!=("HUMAN_REVIEW_DECLARED" if eligible else "HUMAN_REWORK_REQUIRED"):
+        issues.append("Human review status inconsistent with actual scores/findings")
+    if human.get("watched_entire_video") is not True:
+        issues.append("Actual full-video watch attestation missing")
+    if not isinstance(human.get("reviewer"),str) or not human["reviewer"].strip():
+        issues.append("Reviewer identity missing")
+    if not isinstance(human.get("review_notes"),str) or len(human["review_notes"].strip())<40:
+        issues.append("Real full-video observation notes missing")
+    return issues
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--video",required=True)
