@@ -13,7 +13,7 @@ from audio_timeline import validate as validate_audio, normalize, sha256
 ROLLS={"A","B"}
 MEDIA={"gpt_gif","screen_recording","screenshot","data_motion","text_overlay"}
 B_KINDS={"mechanism","comparison","process","evidence","data","text","demo"}
-A_KINDS={"presenter","character_action","emotion","transition","point_of_view"}
+A_KINDS={"presenter","character_action","supporting_character","emotion","transition","point_of_view"}
 
 def validate(plan,timeline,script,audio,probe=True):
     issues=validate_audio(timeline,script,audio,probe=probe)
