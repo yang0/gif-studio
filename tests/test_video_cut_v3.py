@@ -216,6 +216,15 @@ class MixedMediaEditorTests(unittest.TestCase):
             json.dumps(director,ensure_ascii=False),encoding="utf-8")
         plan=compile_plan(self.root,self.script,self.timeline,self.visual,
                           self.audio,self.board,allow_mixed=True)
+        self.assertEqual(sha256_json(director),plan["director_plan_sha256"])
+        # Changing the director decisions after clip compilation rejects reuse.
+        changed=json.loads(json.dumps(director))
+        changed["shots"][1]["preferred_media"]="screenshot"
+        (self.root/"director-v2.json").write_text(json.dumps(changed),encoding="utf-8")
+        with self.assertRaisesRegex(ValueError,"editor media"):
+            validate_compiled(self.root,plan,self.audio,self.script,self.timeline,
+                              self.visual,self.board,True)
+        (self.root/"director-v2.json").write_text(json.dumps(director),encoding="utf-8")
         (self.root/"video-plan.json").write_text(json.dumps(plan),encoding="utf-8")
         srt=self.root/"subtitles"/"captions.srt"
         srt.parent.mkdir()
