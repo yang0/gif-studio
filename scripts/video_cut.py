@@ -196,7 +196,23 @@ def render(project,plan,script,timeline,visual,audio,storyboard,
             "-map","0:v:0","-map","1:a:0"]
     if subtitles is not None:
         from release_sequence import subtitle_issues
+        from audio_subtitles import build as expected_subtitles
         issues=subtitle_issues(subtitles,plan["total_frames"]/fps)
+        # Do not accept visually plausible but stale/mismatched subtitle files.
+        # The exact captions must be produced from the same real aligned voice.
+        content=Path(subtitles).read_text(encoding="utf-8")
+        expected=expected_subtitles(timeline,script,audio)
+        if content!=expected:
+            issues.append("SRT text/timestamps differ from current real audio alignment")
+        proof=Path(str(subtitles)+".provenance.json")
+        if not proof.is_file():
+            issues.append("Aligned subtitle provenance report is missing")
+        else:
+            meta=json.loads(proof.read_text(encoding="utf-8"))
+            if (meta.get("audio_sha256")!=sha256(audio) or
+                meta.get("audio_timeline_sha256")!=sha256_json(timeline) or
+                meta.get("srt_sha256")!=sha256(subtitles)):
+                issues.append("Subtitle provenance no longer matches audio/timeline/SRT")
         if issues:
             raise ValueError("Invalid SRT: "+"; ".join(issues))
         arg="subtitles="+str(Path(subtitles).resolve()).replace("\\","\\\\").replace(":","\\:").replace("'","\\'")
