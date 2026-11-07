@@ -213,6 +213,28 @@ class MixedMediaEditorTests(unittest.TestCase):
                           {key:True for key in
                            ("semantic","pacing","continuity","subtitles","audio")})
 
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"),
+                         "FFmpeg required")
+    def test_first_person_is_not_faked_by_crop(self):
+        self.create_video()
+        shot=self.visual["shots"][0]
+        shot["role"]="point_of_view"
+        shot["viewpoint"]="first_person"
+        shot["camera_preset"]="closeup"
+        shot["character_id"]="presenter"
+        with self.assertRaisesRegex(ValueError,"First-person"):
+            compile_plan(self.root,self.script,self.timeline,self.visual,
+                         self.audio,self.board,allow_mixed=True)
+        shot["camera_preset"]="native"
+        with self.assertRaisesRegex(ValueError,"First-person"):
+            compile_plan(self.root,self.script,self.timeline,self.visual,
+                         self.audio,self.board,allow_mixed=True)
+        shot["source_perspective"]="verified_first_person"
+        plan=compile_plan(self.root,self.script,self.timeline,self.visual,
+                          self.audio,self.board,allow_mixed=True)
+        self.assertEqual("first_person",plan["clips"][0]["viewpoint"])
+        self.assertEqual("native",plan["clips"][0]["camera_preset"])
+
     def test_data_motion_requires_real_export_and_provenance(self):
         self.visual["shots"][1]["media_type"]="data_motion"
         with self.assertRaisesRegex(ValueError,"Source missing|provenance"):
