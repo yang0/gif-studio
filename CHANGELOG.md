@@ -7,6 +7,12 @@
 - Added voice/align/provider-failure and workflow-resume regression tests.
 - Real provider network/model integration, visual QA and publishable benchmark video remain unverified and open.
 
+## [3.0.0-dev.2] - 2026-11-07
+- Added real whole-track TTS and forced-alignment provider interfaces, resumable voice runner and portable provider configuration.
+- Added audio_subtitles.py to generate sentence-level SRT directly from verified acoustic timecodes, with a provenance manifest.
+- Formal v3 sequence release now rejects captions that no longer match the recorded audio/timeline/script.
+- Online voice models, actual human listening and release-quality film remain subject to real validation.
+
 ## [3.0.0-dev.1] - 2026-11-07
 - Started Issue #1 Audio-first Visual Director; introduced validated whole-track acoustic timeline and A/B-roll visual decision schema.
 - Added project_flow.py for project manifest, stage diagnostics and missing/stale resource reporting (not a full automated producer).

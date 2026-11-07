@@ -17,6 +17,7 @@
 - `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。
 - `scripts/generator_adapter.py`：为真实 Codex GIF 生成准备完整提示词/参考包请求，并将实际输出与工具来源登记入候选池；不会自行发起虚构的 GPT API 请求。
 - `scripts/visual_to_sequence.py`：把绑定真实音轨的毫秒级视觉计划编译成现有 `sequence.json` 自由剪辑草案，要求真实素材覆盖时长。
+- `scripts/audio_subtitles.py`：直接使用真实声学时间码生成句级字幕和来源报告；v3 正式发布检查其音轨/时间码/字幕哈希是否一致。
 - `scripts/voice_production.py`：可选 `edge-tts` 整段配音，输出真实 WAV 与来源报告，不能冒充音频时间码。
 - `scripts/forced_align.py`：可选 `stable-ts` 模型对**实际音频+定稿文案**执行强制对齐；任何句子遗漏或文字不符都会失败。
 - `scripts/production_run.py`：统一同步执行 `voice → alignment → sequence`，支持失败停止与已有产物校验恢复，日志写入 `build/workflow-status.json`。
@@ -27,6 +28,8 @@ python3 scripts/project_flow.py init --project project
 python3 scripts/audio_timeline.py --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json
 python3 scripts/visual_plan.py --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --plan project/visual-plan.json
 python3 scripts/project_flow.py status --project project
+# 完成真实声学对齐后生成句级 SRT（不是把句子平均分摊）
+python3 scripts/audio_subtitles.py --project project
 
 # 角色 reference-pack.json 必须指向真实图片，不能用模板占位符直接生成
 python3 scripts/reference_pack.py --project project --manifest project/reference-pack.json

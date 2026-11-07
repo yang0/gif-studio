@@ -63,3 +63,11 @@ python3 scripts/production_run.py --project project --until sequence
 ```
 
 `edge-tts` 所带的可选边界元数据不能替代对既定稿件的独立核对；`stable-ts` 的模型时间戳仍须检查准确性和长停顿。脚本不提供虚假的音频对齐结果，也不会自动勾选最终成片视觉审片。
+
+## 真实时间码驱动字幕
+
+```bash
+python3 scripts/audio_subtitles.py --project project
+```
+
+该命令读取 `audio-timeline.json` 与实际整段音频，要求文本与定稿一致，直接生成 `subtitles/captions.srt` 和 `subtitles/captions.srt.provenance.json`。只输出**句级时间码**，并不伪造词级对齐。已有同名 SRT 若与新对齐不同将拒绝覆盖，必须先归档版本。v3 正式合成会校验 SRT 与音频/时间码/脚本的哈希；字幕安全区、断句可读性、语音正确性仍需人工观看与试听。
