@@ -99,6 +99,8 @@ def inspect_media(root, visual):
         if metadata.get("rights_confirmed") is not True:
             issues.append("source_provenance.rights_confirmed must be explicitly true")
         record = None
+        rel = None
+        expected_hash = None
         if kind == "gpt_gif":
             key = str(shot.get("source_shot_id", "")) + "/" + str(shot.get("candidate_id", ""))
             record = catalog.get(key)
