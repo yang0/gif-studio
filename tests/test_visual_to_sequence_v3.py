@@ -61,6 +61,8 @@ class AudioToEditTests(unittest.TestCase):
                               "visual_mode":"mechanism_breakdown",
                               "motion_plan":["start","end"]}]}
         (self.root/"storyboard.json").write_text(json.dumps(self.board,ensure_ascii=False),encoding="utf-8")
+        (self.root/"audio-timeline.json").write_text(json.dumps(self.timeline,ensure_ascii=False),encoding="utf-8")
+        (self.root/"visual-plan.json").write_text(json.dumps(self.visual,ensure_ascii=False),encoding="utf-8")
 
     def test_two_different_candidates_are_compiled_from_audio(self):
         seq=compile_sequence(self.root,self.script,self.audio,self.timeline,self.visual,self.board)
