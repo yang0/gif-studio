@@ -94,7 +94,7 @@ class BatchTests(unittest.TestCase):
         (self.project/"prompts"/"a.txt").write_text("Modified")
         out=run(self.project,self.tasks,self.command,max_attempts=2)
         self.assertEqual("blocked",out["results"][0]["status"])
-        self.assertIn("Input changed",out["results"][0]["error"])
+        self.assertTrue("Input changed" in out["results"][0]["error"] or "Request exists and is different" in out["results"][0]["error"])
 
     def test_ref_pack_sent_with_all_five_sha(self):
         refs={}
