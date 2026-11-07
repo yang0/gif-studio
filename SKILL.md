@@ -24,7 +24,7 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 A-roll 多镜头需要真实参考包：三视图（正/侧/背）、笔触局部和场景图。使用 `reference_pack.py` 核对实际图像哈希和分辨率。Codex GIF 生成接口必须遵循 `generator_adapter.py` 的准备/入库协议：显式记录每条完整 prompt、参考包、真实工具调用/回执、生成 GIF，并让候选进独立素材库。**工具回执只是来源记录，不代表自动认证，也不能绕过视觉审核。** 不要声称此 Python 脚本本身会生成 GIF。
 
-目前这条 v3 路线只完成**数据契约与校验/入库衔接**，真正的整段 TTS、强制声学对齐实现、混合媒体 B-roll 渲染及高质量真实样片仍属于 Issue #1 后续工作；已提供从已审时间码与真实 GPT GIF 候选生成草稿 EDL 的工具；不能宣称 v3 已全部交付。
+v3 现已增加可选真实 Provider：`scripts/voice_production.py` 使用 edge-tts **整段合成** WAV（需要网络与可选依赖），`scripts/forced_align.py` 使用 stable-ts 将定稿全文与真实音轨做强制对齐（依赖本地模型和可用运行环境，必须审核实际对齐质量）。`scripts/production_run.py --project project --until sequence` 可将已有音频、对齐、视觉编排及真实候选素材接入可恢复同步工作流；若需在线 TTS，必须加 `--allow-network-tts`；若需运行/下载对齐模型，必须加 `--allow-alignment-model`。失败不得跳过或冒充完成。完整 GPT GIF 工具调用调度、混合 B-roll 渲染及真实高质量样片仍属于 Issue #1 后续工作；已提供从已审时间码与真实 GPT GIF 候选生成草稿 EDL 的工具；不能宣称 v3 已全部交付。
 
 ## 运行前提
 

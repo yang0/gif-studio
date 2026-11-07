@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-dev.2] - 2026-11-07
+- Added real optional `edge-tts` whole-narration synthesis with actual WAV output, immutable audio metadata and no fabricated timestamps.
+- Added optional `stable-ts` forced alignment from locked paragraph text to real audio; fails closed on drift/missing segments.
+- Added resumable synchronous `production_run.py` stages (voice, alignment, sequence), explicit network/model consent flags and structured blocked-state reports.
+- Added voice/align/provider-failure and workflow-resume regression tests.
+- Real provider network/model integration, visual QA and publishable benchmark video remain unverified and open.
+
 ## [3.0.0-dev.1] - 2026-11-07
 - Started Issue #1 Audio-first Visual Director; introduced validated whole-track acoustic timeline and A/B-roll visual decision schema.
 - Added project_flow.py for project manifest, stage diagnostics and missing/stale resource reporting (not a full automated producer).

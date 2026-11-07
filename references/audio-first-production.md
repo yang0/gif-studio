@@ -46,3 +46,20 @@ python3 scripts/sequence_cut.py --project project --preview --audio project/audi
 ```
 
 编译器将毫秒音频区间按输出 FPS 转成镜头起止帧；真实 GIF 必须覆盖需要的时长，不能自动末帧定格或重复。产生的 EDL 仍是 `draft`，不等于审片通过。修改原始声音/视觉编排后，已生成的 v3 EDL 必须被重新验证并按需重建，禁止沿用旧审批。
+
+## 真正的整段配音与强制声学对齐（可选 Provider）
+
+- **edge-tts**：`scripts/voice_production.py` 在单次调用里合成完整稿件，后端音频规范化为单声道 PCM WAV。使用时需要网络；本工具不能保证服务持续可用，且不自动声称语音质量符合发布标准。
+- **stable-ts**：`scripts/forced_align.py` 从实际完整音轨和定稿文字进行对齐，使用 `model.align(audio, text, language='zh', original_split=True)`；输出每个锁定段落的开始/结束毫秒数。若返回段落数或文字与稿件不一致，则拒绝输出时间码。模型所需硬件、下载与许可由调用者负责。
+- **production_run**：按 voice → alignment → sequence 同步执行；原始录音或已有校验通过的文件优先复用。网络 TTS 必须显式加 `--allow-network-tts`，模型对齐必须显式加 `--allow-alignment-model`，失败即停止并写 `build/workflow-status.json`。
+
+```bash
+python -m pip install -r requirements-voice.txt
+# stable-ts、openai-whisper 按对应项目要求单独安装
+python3 scripts/production_run.py --project project --until voice --allow-network-tts
+python3 scripts/production_run.py --project project --until alignment --allow-alignment-model
+# 视频内容已审稿、A/B-roll 已编排、真实候选已经入库时
+python3 scripts/production_run.py --project project --until sequence
+```
+
+`edge-tts` 所带的可选边界元数据不能替代对既定稿件的独立核对；`stable-ts` 的模型时间戳仍须检查准确性和长停顿。脚本不提供虚假的音频对齐结果，也不会自动勾选最终成片视觉审片。

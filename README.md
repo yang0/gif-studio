@@ -14,6 +14,9 @@
 - `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。
 - `scripts/generator_adapter.py`：为真实 Codex GIF 生成准备完整提示词/参考包请求，并将实际输出与工具来源登记入候选池；不会自行发起虚构的 GPT API 请求。
 - `scripts/visual_to_sequence.py`：把绑定真实音轨的毫秒级视觉计划编译成现有 `sequence.json` 自由剪辑草案，要求真实素材覆盖时长。
+- `scripts/voice_production.py`：可选 `edge-tts` 整段配音，输出真实 WAV 与来源报告，不能冒充音频时间码。
+- `scripts/forced_align.py`：可选 `stable-ts` 模型对**实际音频+定稿文案**执行强制对齐；任何句子遗漏或文字不符都会失败。
+- `scripts/production_run.py`：统一同步执行 `voice → alignment → sequence`，支持失败停止与已有产物校验恢复，日志写入 `build/workflow-status.json`。
 
 ```bash
 python3 scripts/project_flow.py init --project project
@@ -35,7 +38,24 @@ python3 scripts/generator_adapter.py --project project --ingest --shot shot-01 -
 python3 scripts/visual_to_sequence.py --project project --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --visual-plan project/visual-plan.json --storyboard project/storyboard.json
 ```
 
-该命令生成待导演审阅的 v2 EDL；如果素材不够长或没有对应候选，它会报错而非自动凑时长。混合媒体 B-roll 引擎尚未落地。此流程不会将音轨时长按字数均摊伪装“声学对齐”，也不会把任意 GIF 注册为自动视觉通过。**v3 完整真实样片、音频生成/对齐与统一自动执行器仍未完成**，见 Issue #1。
+该命令生成待导演审阅的 v2 EDL；如果素材不够长或没有对应候选，它会报错而非自动凑时长。混合媒体 B-roll 引擎尚未落地。此流程不会将音轨时长按字数均摊伪装“声学对齐”，也不会把任意 GIF 注册为自动视觉通过。**v3 完整真实样片、混合媒体 B-roll、全自动外部 GIF 生成和正式发布闭环仍未完成**，见 Issue #1。
+
+### v3 音频与剪辑真实执行入口
+
+此批新增的语音模块是**可选择安装的真实 Provider**，不会默默使用本地机器发声，也不会在没有网络或模型的情况下冒充合成/对齐成功：
+
+```bash
+python -m pip install -r requirements-voice.txt
+# 真实强制对齐另行安装 stable-ts / openai-whisper 和所需模型环境
+python3 scripts/production_run.py --project project --until voice --allow-network-tts --voice zh-CN-XiaoxiaoNeural
+python3 scripts/production_run.py --project project --until alignment --allow-alignment-model --align-model base
+# 在项目内准备完整已审核的 visual-plan.json、真实 GPT GIF 候选后：
+python3 scripts/production_run.py --project project --until sequence
+```
+
+可以先将已有音频放在 `project/audio/voiceover.wav`，直接运行 `--until alignment`。现有音频/对齐文件符合 SHA 和时间码规则就**校验后复用**；错误或过期的结果不会被静默覆盖。网络 TTS 与本地大型对齐模型都必须显式开启。不应在用户没有真实配音环境时拿测试用静音轨代替口播。
+
+这仍是“音频 → 已有视觉素材 → 剪辑草稿”的同步执行器；**不具备从主题全自动生成最终高质量视频的能力**，实际生成 GPT GIF 与整片视觉审阅仍需通过真实工具完成。
 
 ## 核心规则：GPT GIF ONLY
 
