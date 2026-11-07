@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "template": "comparison",
+  "title": "不同方案的对比",
+  "theme": "light",
+  "items": [
+    {
+      "label": "方案 A",
+      "value": 72
+    },
+    {
+      "label": "方案 B",
+      "value": 46
+    },
+    {
+      "label": "方案 C",
+      "value": 91
+    }
+  ],
+  "footer": "替换为真实数据后制作"
+}

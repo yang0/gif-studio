@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "template": "process",
+  "title": "从问题到答案",
+  "theme": "dark",
+  "items": [
+    {
+      "label": "观察"
+    },
+    {
+      "label": "分析"
+    },
+    {
+      "label": "验证"
+    }
+  ],
+  "footer": "每一步都有明确的知识作用"
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "template": "metric",
+  "title": "数据变化",
+  "theme": "light",
+  "start_value": 0,
+  "value": 86,
+  "unit": "%",
+  "caption": "示例数据（制作时替换真实数字）"
+}

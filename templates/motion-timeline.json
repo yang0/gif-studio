@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "template": "timeline",
+  "title": "事情如何发生",
+  "theme": "dark",
+  "items": [
+    {
+      "label": "开始"
+    },
+    {
+      "label": "转折"
+    },
+    {
+      "label": "结果"
+    }
+  ],
+  "footer": "按口播解释事件顺序"
+}
