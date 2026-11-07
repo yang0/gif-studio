@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.1.0-dev.2] - 2026-11-07
+- Implemented Codex-grounded creative assignment and two-variant brief checking; actual Codex agent authors the substantive shot briefs.
+- Added character acting continuity checks, six semantic B-roll strategy contracts and real speech-grounded cut guidance.
+- Added actual semantic re-cut output (revised visual plan) rather than merely suggesting new durations.
+- Added immutable revision_execute.py to safely clone and recompile only affected media; content-addressed FFmpeg clip caching reuses untouched footage and prevents approved-record carryover.
+- Added read-only local two-MP4 comparison workspace with seekable clip markers and user-clicked defects.json export.
+- Video Critic additionally measures real loudness, detects missing/invalid SRT and estimates uniform-margin risks; none of these implies natural speech or good aesthetics.
+- production_run.py supports checked director stage and actual mixed_preview; project_flow supports genuine non-GIF sources and mixed release.
+- Added 3.10/3.11/3.12 regression suites for renderer, revision, actor, editing, review and provenance. Golden Sample remains unapproved.
+
+
 ## [3.1.0-dev.1] - 2026-11-07
 - Created Issue #2 and implemented semantic Visual Director v2 storyboard contracts with explicit alternative shot proposals.
 - Added decoded-MP4 Video Critic risks, honest standalone human scoring, score integrity checks and stale-asset detection.

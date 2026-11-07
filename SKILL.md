@@ -28,14 +28,14 @@ python scripts/visual_plan.py --script project/script.json --audio project/audio
 
 音频制作可以选择实际可用的整段 TTS、录音或已存在音频。没有音频时先解决音频，不得生成“按字数平均分配”的伪对齐时间码。
 
-**B. 编写真正的语义镜头方案**：\`project/shot-briefs.json\` 必须包含每个真实视觉段落的具体初态、事件、结果、观众额外获得的信息、视觉策略和合理素材来源；A-roll 还需角色意图、动作、情绪及道具交互。两种风格候选只有在 briefs **显式给出真实不同的备选设计**时才可比较；不能凭空用固定公式给出不同方案。
+**B. 编写真正的语义镜头方案**：`project/shot-briefs.json` 必须包含每个真实视觉段落的具体初态、事件、结果、观众额外获得的信息、视觉策略和合理素材来源；A-roll 还需角色意图、动作、情绪及道具交互。两种风格候选只有在 briefs **显式给出真实不同的备选设计**时才可比较；不能凭空用固定公式给出不同方案。
 
 ```bash
 python scripts/visual_director.py --visual project/visual-plan.json --timeline project/audio-timeline.json --briefs project/shot-briefs.json --variant dramatic --out project/director-v2.json
 python scripts/visual_director.py --visual project/visual-plan.json --timeline project/audio-timeline.json --check project/director-v2.json
 ```
 
-\`director-v2.json\` 是**未审核导演草案**，同时引用真实音频时间轴与旧视觉计划的 hash；变更后必须重新验证。规范参见 [v3.1 导演与观感评审](references/quality-director-v31.md)。
+`director-v2.json` 是**未审核导演草案**，同时引用真实音频时间轴与旧视觉计划的 hash；变更后必须重新验证。规范参见 [v3.1 导演与观感评审](references/quality-director-v31.md)。
 
 **C. 素材和编辑**：优先使用真实可用来源并记录 SHA。视频混合剪辑：
 
@@ -57,18 +57,20 @@ python scripts/video_critic.py --video project/build/mixed-preview.mp4 --plan pr
 
 技术风险报告会提示相邻图像近似、长时间运动变化很小、四镜头近似等长、音频轨缺失等**需要看片判断的风险**，不自动判断艺术质量。缺少真实观感观察不能生成虚假的人工通过记录。
 
+**新版执行入口**：如果由当前 Codex Agent 负责实际视觉导演，应先运行 `director_brief_agent.py` 输出基于真实文案和声学时间码的创意任务，Codex 亲自写好 `shot-briefs.json`，再运行 `visual_director.py` 与 `character_performance.py` / `broll_strategy.py` 检查；音画素材齐备后可使用 `production_run.py --until mixed_preview` 创建实际 MP4。语义切点用 `editorial_engine.py` 与 `semantic_recut.py`，不能均分时长。完整命令见 [v3.1 端到端操作](references/v31-execution.md)。
+
 **E. 局部返工**：
 
 ```bash
 python scripts/revision_planner.py --video project/build/mixed-preview.mp4 --plan project/video-plan.json --critic project/quality/critic.json --findings project/quality/defects.json --revision-id rev-001 --out project/revisions/rev-001.json
 ```
 
-仅修改被指出的镜头源或全局声音/时间线，重跑相关下游剪辑、审片和正式交付。项目状态可用 \`scripts/project_flow.py status --project project\` 查看，v3.1 导演文件存在时自动检查质量证据。详细规范与格式见 [v3.1 质量流程](references/quality-director-v31.md)。
+通过 `revision_execute.py` 读取已验证的 revision 与真实替换素材，创建全新的工程修订版；自动复用未修改片段的 FFmpeg 缓存，但不继承人工审批。音轨需要重录时明确阻断，不能伪造声音。使用 `review_compare.py` 在浏览器双视频对照、点击定位镜头并下载人工缺陷清单。项目状态可用 `scripts/project_flow.py status --project project` 查看，v3.1 导演文件存在时自动检查质量证据。详细规范与格式见 [v3.1 质量流程](references/quality-director-v31.md)。
 
 ## 正式交付的硬门禁
 
 - 全片配音自然、字幕对齐、知识准确、主体清楚、镜头真实有变化；形似 PPT 的无意义动效必须返工。
-- 使用 \`mixed_release.py --approve-shot\` 按实际画面逐镜审阅，再 \`mixed_release.py --release\` 输出独立正式 MP4；最终 \`final_review.py --inspect\` 后真实观看/听完，才可 \`--approve\`。[发布规范](references/mixed-formal-release.md)
-- 启用了 \`director-v2.json\` 的 v3.1 项目需要 **同一实际视频文件**的 \`quality/critic.json\` 和 \`quality/human-review.json\`；最终门禁会校验来源、分数与阻断项的一致性。人写的审核结果仍是*声明*，不是机器证实观众喜欢。
+- 使用 `mixed_release.py --approve-shot` 按实际画面逐镜审阅，再 `mixed_release.py --release` 输出独立正式 MP4；最终 `final_review.py --inspect` 后真实观看/听完，才可 `--approve`。[发布规范](references/mixed-formal-release.md)
+- 启用了 `director-v2.json` 的 v3.1 项目需要 **同一实际视频文件**的 `quality/critic.json` 和 `quality/human-review.json`；最终门禁会校验来源、分数与阻断项的一致性。人写的审核结果仍是*声明*，不是机器证实观众喜欢。
 - **若用户要一条合格视频，必须交付实际可播放 MP4 并观看复评**。不足之处如实说明，不能以示例测试代替。
 - v1/v2/v3 旧版操作细节移到 [旧流程参考](references/legacy-production.md)；遇到冲突，以 v3.1 的质量和声学优先原则为准。
