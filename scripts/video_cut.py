@@ -298,13 +298,15 @@ def render(project,plan,script,timeline,visual,audio,storyboard,
                 issues.append("Subtitle provenance no longer matches audio/timeline/SRT")
         if issues:
             raise ValueError("Invalid SRT: "+"; ".join(issues))
-        arg="subtitles="+str(Path(subtitles).resolve()).replace("\\","\\\\").replace(":","\\:").replace("'","\\'")
+        from staged_subtitles import prepare as staged_filter
+        arg,filter_work=staged_filter(subtitles,root/"build"/"video-preview")
         command+=["-vf",arg,"-c:v","libx264","-crf","19"]
     else:
         command+=["-c:v","copy"]
     command+=["-c:a","aac","-t",str(plan["total_frames"]/fps),
               "-movflags","+faststart",str(output)]
-    subprocess.run(command,check=True)
+    subprocess.run(command,check=True,
+                   cwd=filter_work if subtitles is not None else None)
     report={"status":"UNREVIEWED_MIXED_PREVIEW","output":str(output),
             "video_sha256":sha256(output),
             "audio_sha256":sha256(audio),

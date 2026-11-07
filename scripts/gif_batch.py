@@ -55,7 +55,9 @@ def call_backend(command, mode, payload=None, timeout=120):
     try:
         result=subprocess.run(checked_command(command)+[mode],
                               input=json.dumps(payload,ensure_ascii=False) if payload is not None else None,
-                              capture_output=True,text=True,timeout=timeout,check=False)
+                              capture_output=True,text=True,encoding="utf-8",errors="replace",
+                              env={**os.environ,"PYTHONIOENCODING":"utf-8"},
+                              timeout=timeout,check=False)
     except subprocess.TimeoutExpired as exc:
         raise TimeoutError(f"Backend {mode} timed out after {timeout}s") from exc
     if result.returncode:

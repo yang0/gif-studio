@@ -68,7 +68,7 @@ class RunStateTests(unittest.TestCase):
                   "audio_sha256":sha256(audio),"duration_ms":1000,
                   "segments":[{"id":"s1","start_ms":0,"end_ms":1000,
                                "text":"测试完整口播"}]}
-        (self.root/"audio-timeline.json").write_text(json.dumps(timeline,ensure_ascii=False))
+        (self.root/"audio-timeline.json").write_text(json.dumps(timeline,ensure_ascii=False),encoding="utf-8")
         result=run(self.root,"sequence")
         self.assertEqual("sequence",result["blocked_at"])
         self.assertFalse((self.root/"sequence.json").exists())

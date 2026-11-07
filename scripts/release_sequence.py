@@ -117,12 +117,13 @@ def release(project,storyboard,sequence_file,audio,subtitles,out):
     target=Path(out).resolve()
     target.parent.mkdir(parents=True,exist_ok=True)
     # The subtitles are a deterministic overlay on the real GIF footage.
-    arg="subtitles="+str(Path(subtitles).resolve()).replace("\\","\\\\").replace(":","\\:").replace("'","\\'")
+    from staged_subtitles import prepare as staged_filter
+    arg,filter_work=staged_filter(subtitles,build)
     subprocess.run(["ffmpeg","-hide_banner","-loglevel","error","-y",
                     "-i",str(intermediate),"-vf",arg,"-map","0:v:0",
                     "-map","0:a:0","-c:v","libx264","-crf","18","-preset","medium",
                     "-pix_fmt","yuv420p","-c:a","copy","-movflags","+faststart",
-                    str(target)],check=True)
+                    str(target)],check=True,cwd=filter_work)
     media=probe_video(target)
     kinds=[s.get("codec_type") for s in media.get("streams",[])]
     videos=[s for s in media.get("streams",[]) if s.get("codec_type")=="video"]
