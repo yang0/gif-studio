@@ -14,6 +14,7 @@ sys.path.insert(0,str(ROOT/"scripts"))
 from candidate_pool import add, read, select
 from candidate_review import inspect_candidate, approve_candidate, status
 from release_sequence import preflight, release
+from final_review import sheet as inspect_final, approve as approve_final
 from sequence_cut import initialize
 
 FLAGS={key:True for key in ("semantic","motion","style","composition","continuity")}
@@ -125,6 +126,16 @@ class CandidateReleaseTests(unittest.TestCase):
         self.assertTrue((self.root/"final.mp4").is_file())
         self.assertTrue(result["has_audio"])
         self.assertTrue(result["burned_subtitles"])
+        # The final approval cannot silently reuse review results after
+        # a producer changes narration/captions on disk.
+        inspect_final(self.root,self.root/"final.mp4")
+        self.subtitles.write_text("1\n00:00:00,000 --> 00:00:00,900\nChanged caption\n",
+                                  encoding="utf-8")
+        with self.assertRaisesRegex(ValueError,"subtitles_source"):
+            approve_final(self.root,self.root/"final.mp4","test reviewer",
+                          "Reviewed every frame in synthetic fixture; not a production movie",
+                          {"semantic":True,"pacing":True,"continuity":True,
+                           "subtitles":True,"audio":True})
 
 if __name__=="__main__":
     unittest.main()
