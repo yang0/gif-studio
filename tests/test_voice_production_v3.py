@@ -2,6 +2,8 @@
 import asyncio
 import json
 import sys
+import shutil
+import subprocess
 import tempfile
 import unittest
 import wave
@@ -64,6 +66,29 @@ class VoiceProviderTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError,"Optional dependency"):
                 make_audio(self.script,self.root/"output.wav")
         self.assertFalse((self.root/"output.wav").exists())
+
+    @unittest.skipUnless(shutil.which("ffmpeg") and shutil.which("ffprobe"),
+                         "FFmpeg required to verify actual WAV produced")
+    def test_real_wav_output_from_mocked_tts_transport(self):
+        # This fixture exercises the real MP3->WAV conversion, not speech quality.
+        calls=[]
+        class DummyCommunicate:
+            def __init__(self,text,voice,rate):
+                calls.append((text,voice,rate))
+            async def save(self,path):
+                subprocess.run(["ffmpeg","-v","error","-y","-f","lavfi","-i",
+                                "sine=frequency=330:sample_rate=24000","-t","1.4",
+                                "-codec:a","libmp3lame",path],check=True)
+        module=SimpleNamespace(Communicate=DummyCommunicate)
+        with patch.dict(sys.modules,{"edge_tts":module}):
+            out=self.root/"whole.wav"
+            report=make_audio(self.script,out,voice="zh-CN-XiaoxiaoNeural")
+        self.assertTrue(out.is_file())
+        self.assertGreater(out.stat().st_size,5000)
+        self.assertEqual("actual_synthesized_audio_unaligned",report["status"])
+        self.assertEqual("第一句话。第二句话。",calls[0][0])
+        self.assertEqual(1,len(calls))
+        self.assertEqual(sha256(out),report["audio_sha256"])
 
     def test_refuse_overwrite_existing_audio(self):
         with self.assertRaises(FileExistsError):
