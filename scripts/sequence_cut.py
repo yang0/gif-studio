@@ -41,6 +41,24 @@ def verify(project, sequence, audio=None, require_audio=False, storyboard=None):
         if (sequence.get("fps"),sequence.get("width"),sequence.get("height")) != (
                 board.get("fps"),board.get("width"),board.get("height")):
             faults.append("Sequence FPS/canvas no longer matches storyboard")
+    # V3 contracts are optional for legacy EDLs, mandatory when stamped.
+    if sequence.get("audio_timeline_sha256") or sequence.get("visual_plan_sha256"):
+        from audio_timeline import sha256 as source_sha
+        from visual_plan import sha256_json
+        for name,field in (("audio-timeline.json","audio_timeline_sha256"),
+                           ("visual-plan.json","visual_plan_sha256")):
+            source=root/name
+            if not source.is_file():
+                faults.append(f"V3 source missing: {name}")
+                continue
+            try:
+                actual=sha256_json(json.loads(source.read_text(encoding="utf-8")))
+                if actual!=sequence.get(field):
+                    faults.append(f"V3 source changed after sequence creation: {name}")
+            except (ValueError,TypeError):
+                faults.append(f"V3 source invalid: {name}")
+        if audio is not None and sequence.get("audio_sha256")!=source_sha(audio):
+            faults.append("V3 narration audio changed after sequence creation")
     catalog = read_catalog(root)
     clips = sequence.get("clips", [])
     if not isinstance(clips, list) or not clips:
