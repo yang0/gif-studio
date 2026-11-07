@@ -65,6 +65,67 @@ def run_stage(project,stage,allow_network=False,allow_models=False,
         # Only write after actual align succeeds and the validator passes.
         p["audio_timeline"].write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
         return {"stage":"alignment","status":"aligned","segments":len(result["segments"])}
+    if stage=="director":
+        from visual_director import validate as validate_director
+        from character_performance import validate as validate_actor
+        from broll_strategy import review as validate_broll
+        from editorial_engine import recommend
+        director=root/"director-v2.json"
+        if not director.is_file():
+            raise FileNotFoundError("Missing actual Codex-authored director-v2.json; prepare briefs with director_brief_agent.py")
+        if not p["audio_timeline"].is_file() or not p["visual_plan"].is_file():
+            raise FileNotFoundError("Real audio/visual plan needed before director review")
+        audio=read(p["audio_timeline"])
+        visual=read(p["visual_plan"])
+        direction=read(director)
+        errors=[x for x in validate_director(direction,audio,visual)
+                if not x.endswith("(warning)")]
+        errors+=validate_actor(direction,visual)["errors"]
+        errors+=validate_broll(direction,visual)["errors"]
+        if errors:
+            raise ValueError("Director semantic/acting strategy invalid: "+"; ".join(errors))
+        decisions=recommend(direction,audio,visual)
+        out=root/"build"/"director"/"semantic-cut-draft.json"
+        if out.is_file():
+            existing=read(out)
+            if existing!=decisions:
+                raise ValueError("Old director cut decisions stale; archive before creating a new revision")
+            return {"stage":"director","status":"resumed_verified_director",
+                    "cut_risks":decisions["risks"]}
+        out.parent.mkdir(parents=True,exist_ok=True)
+        out.write_text(json.dumps(decisions,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+        return {"stage":"director","status":"semantic_cuts_prepared_unreviewed",
+                "cut_risks":decisions["risks"]}
+    if stage=="mixed_preview":
+        from video_cut import compile_plan,render,validate_compiled
+        from audio_subtitles import build as expected_srt
+        if not p["visual_plan"].is_file() or not p["storyboard"].is_file():
+            raise FileNotFoundError("Real visual plan and storyboard missing")
+        timeline=read(p["audio_timeline"]); visual=read(p["visual_plan"])
+        storyboard=read(p["storyboard"])
+        plan_path=root/"video-plan.json"
+        if plan_path.is_file():
+            plan=read(plan_path)
+            validate_compiled(root,plan,p["audio"],script,timeline,visual,storyboard,True)
+        else:
+            plan=compile_plan(root,script,timeline,visual,p["audio"],storyboard,True)
+            plan_path.write_text(json.dumps(plan,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+        subtitles=root/"subtitles"/"captions.srt"
+        if not subtitles.is_file():
+            raise FileNotFoundError("Actual aligned SRT required before narrated preview; run audio_subtitles.py")
+        output=root/"build"/"mixed-preview.mp4"
+        if output.is_file():
+            report_file=root/"build"/"video-preview"/"preview-report.json"
+            report=read(report_file) if report_file.is_file() else {}
+            if (report.get("video_sha256")!=sha256(output) or
+                report.get("visual_plan_sha256")!=plan["visual_plan_sha256"] or
+                report.get("audio_sha256")!=sha256(p["audio"])):
+                raise ValueError("Existing preview stale; save a new project revision")
+            return {"stage":"mixed_preview","status":"resumed_unchanged_preview"}
+        report=render(root,plan,script,timeline,visual,p["audio"],storyboard,
+                      output,subtitles=subtitles,allow_mixed=True)
+        return {"stage":"mixed_preview","status":"rendered_unreviewed",
+                "video_sha256":report["video_sha256"]}
     if stage=="sequence":
         if not p["audio_timeline"].is_file() or not p["audio"].is_file():
             raise FileNotFoundError("Actual audio and audio-timeline.json required")
@@ -91,10 +152,17 @@ def run_stage(project,stage,allow_network=False,allow_models=False,
     raise ValueError("Unknown workflow stage")
 
 def run(project,until,**kwargs):
-    if until not in STEPS:
+    if until not in STEPS and until not in ("director","mixed_preview"):
         raise ValueError("Unknown workflow target")
+    if until in ("director","mixed_preview"):
+        stages=["voice","alignment","director"]
+        if until=="mixed_preview":stages.append("mixed_preview")
+    else:
+        stages=list(STEPS[:STEPS.index(until)+1])
+        if until=="sequence" and (Path(project)/"director-v2.json").is_file():
+            stages.insert(-1,"director")
     outcomes=[]
-    for stage in STEPS[:STEPS.index(until)+1]:
+    for stage in stages:
         try:
             record=run_stage(project,stage,**kwargs)
             outcomes.append(record)
@@ -121,7 +189,7 @@ def write_status(project,data):
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--project",required=True)
-    p.add_argument("--until",choices=STEPS,default="sequence")
+    p.add_argument("--until",choices=STEPS+("director","mixed_preview"),default="sequence")
     p.add_argument("--allow-network-tts",action="store_true")
     p.add_argument("--allow-alignment-model",action="store_true")
     p.add_argument("--voice",default="zh-CN-XiaoxiaoNeural")
