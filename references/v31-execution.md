@@ -1,5 +1,8 @@
 # v3.1：视频导演 → 语义剪辑 → 实际审片 → 局部返工
 
+> **Issue #3 新默认素材门禁（2026-11-07）**：本手册含部分 v3.1 历史技术说明；执行剪辑/发布前必须先运行 `python scripts/real_source_gate.py --project project`，并为每镜填写真实 `source_provenance`。`data_motion`、SVG/Pillow/Canvas/FFmpeg 图形卡片及类似程序动画**不允许成为默认主体视频素材**，没有真实视频/GIF 就停止制作。以 [real-source-contract.md](real-source-contract.md) 与顶层 [SKILL.md](../SKILL.md) 为准。旧 `.motion.json` 来源证明只是程序动画来源，不使其成为允许素材。
+
+
 这是通用 Codex 视频制作 Skill，不是某个 GIF 生成器的客户端。
 
 ## 0. 准备真实输入
