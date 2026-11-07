@@ -181,6 +181,8 @@ def main():
     if a.verify:
         result=verify_release(root,a.out or root/"build"/"formal-mixed"/"final.mp4")
     else:
+        from real_source_gate import require_media
+        require_media(root,load(root/"visual-plan.json"))
         plan=load(root/"video-plan.json")
         if a.approve_shot:
             clip=next((x for x in plan["clips"] if x["visual_plan_id"]==a.shot),None)
