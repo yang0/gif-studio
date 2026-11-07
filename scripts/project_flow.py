@@ -13,7 +13,7 @@ from audio_timeline import sha256 as file_hash, validate as validate_audio
 from visual_plan import validate as validate_visual
 from candidate_pool import read as read_candidates
 
-STAGES=("script","audio_alignment","visual_plan","asset_library","edit_sequence","release")
+STAGES=("script","audio_alignment","visual_plan","aligned_subtitles","asset_library","edit_sequence","release")
 CONFIG={"version":3,"script":"script.json","audio":"audio/voiceover.wav",
         "audio_timeline":"audio-timeline.json","visual_plan":"visual-plan.json",
         "storyboard":"storyboard.json","sequence":"sequence.json",
@@ -85,6 +85,28 @@ def state(root):
             entry("visual_plan","ready" if not issues else "blocked",issues)
         except (ValueError,OSError,KeyError,TypeError) as exc:
             entry("visual_plan","blocked",[str(exc)])
+    subtitles=root/"subtitles"/"captions.srt"
+    proof=Path(str(subtitles)+".provenance.json")
+    if not subtitles.is_file() or not proof.is_file():
+        entry("aligned_subtitles","missing",["SRT and its verified audio provenance are required"])
+    elif not loc["audio"].is_file() or not loc["audio_timeline"].is_file() or not loc["script"].is_file():
+        entry("aligned_subtitles","blocked",["Original sound timeline/script missing"])
+    else:
+        try:
+            from visual_plan import sha256_json
+            p=json.loads(proof.read_text(encoding="utf-8"))
+            a=json.loads(loc["audio_timeline"].read_text(encoding="utf-8"))
+            issues=[]
+            expected={"script_sha256":file_hash(loc["script"]),
+                      "audio_sha256":file_hash(loc["audio"]),
+                      "audio_timeline_sha256":sha256_json(a),
+                      "srt_sha256":file_hash(subtitles)}
+            for key,value in expected.items():
+                if p.get(key)!=value:
+                    issues.append("Aligned captions stale: "+key)
+            entry("aligned_subtitles","ready" if not issues else "blocked",issues)
+        except (ValueError,OSError,TypeError,KeyError) as exc:
+            entry("aligned_subtitles","blocked",[str(exc)])
     catalog_path=root/"library"/"catalog.json"
     if not catalog_path.is_file():
         entry("asset_library","missing",["No candidate library; produce real GPT GIF candidates"])
