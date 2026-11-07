@@ -13,7 +13,7 @@ from audio_timeline import sha256 as file_hash, validate as validate_audio
 from visual_plan import validate as validate_visual
 from candidate_pool import read as read_candidates
 
-STAGES=("script","audio_alignment","visual_plan","aligned_subtitles","asset_library","edit_sequence","release")
+STAGES=("script","audio_alignment","visual_plan","aligned_subtitles","asset_production","asset_library","edit_sequence","release")
 CONFIG={"version":3,"script":"script.json","audio":"audio/voiceover.wav",
         "audio_timeline":"audio-timeline.json","visual_plan":"visual-plan.json",
         "storyboard":"storyboard.json","sequence":"sequence.json",
@@ -107,6 +107,23 @@ def state(root):
             entry("aligned_subtitles","ready" if not issues else "blocked",issues)
         except (ValueError,OSError,TypeError,KeyError) as exc:
             entry("aligned_subtitles","blocked",[str(exc)])
+    production_manifest=root/"production"/"visual-asset-plan.json"
+    if not production_manifest.is_file():
+        entry("asset_production","missing",[
+            "A/B-roll candidate batch not prepared; run visual_assets.py --prepare"])
+    else:
+        try:
+            from visual_assets import check as check_production
+            production=check_production(root)
+            if production["status"]=="blocked":
+                entry("asset_production","blocked",production.get("issues",[]))
+            elif production["status"]=="awaiting_generation":
+                entry("asset_production","missing",[
+                    "Waiting for actual GPT GIF generation: "+", ".join(production["pending"])])
+            else:
+                entry("asset_production","ready",[])
+        except (ValueError,OSError,KeyError,TypeError) as exc:
+            entry("asset_production","blocked",[str(exc)])
     catalog_path=root/"library"/"catalog.json"
     if not catalog_path.is_file():
         entry("asset_library","missing",["No candidate library; produce real GPT GIF candidates"])
