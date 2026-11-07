@@ -77,6 +77,8 @@ def approve(project, video, reviewer, notes, checks):
     if not info["audio_track_present"]:
         raise ValueError("No audio track; this is only a silent preview, not a finished narrated video")
     formal=root/"build"/"formal-sequence"/"release-provenance.json"
+    if (root/"sequence.json").is_file() and not formal.is_file():
+        raise ValueError("Variable sequence final approval requires formal release provenance")
     if formal.is_file():
         provenance=json.loads(formal.read_text(encoding="utf-8"))
         if (provenance.get("status")!="PENDING_FINAL_VIDEO_REVIEW" or
