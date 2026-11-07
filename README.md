@@ -1,5 +1,19 @@
 # gif-studio 🎬
 
+## v3.1 · 质量优先的智能视频导演（研发中）
+
+[Issue #2：Visual Director v2 / Video Critic / Revision Loop](https://github.com/yang0/gif-studio/issues/2)。
+
+这次升级不是继续堆 GIF 或动效模板，而是让**导演先设计可观察的视觉事件和知识增量，再做素材、剪辑、实际审片与局部返工**。核心新增 `scripts/visual_director.py`、`scripts/video_critic.py`、`scripts/revision_planner.py`。质量审核基于真实解码 MP4；主观评分必须由实际看过/听过视频的审核者声明，不能使用 CI 模拟音轨伪造通过。
+
+- [v3.1 质量导演使用方法](references/quality-director-v31.md)
+- [原有工作流（归档）](references/legacy-production.md)
+- [旧 24 秒样片失败基准](examples/focus-notification-v3/quality-baseline.json)
+
+**v3.1 并非高质量视频已完成：** 自然配音、实际口播对齐、角色一致性和全片观感验收仍需要真实制作证据。
+
+
+
 **基于 Codex 的知识视频制作 Skill：从口播、A/B-roll 到素材剪辑、字幕、音效与 MP4 交付。** 支持已有录屏、截图、真实 GIF，视内容选择合适素材，不绑定号池、单一模型或风格模板。
 
 ## v3 本轮新增：真正的视频信息动效、人物景别与正式混合审核

@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.1.0-dev.1] - 2026-11-07
+- Created Issue #2 and implemented semantic Visual Director v2 storyboard contracts with explicit alternative shot proposals.
+- Added decoded-MP4 Video Critic risks, honest standalone human scoring, score integrity checks and stale-asset detection.
+- Added hash-bound localized revision planner with keep/rebuild dependency scope.
+- v3.1 quality checks are opt-in for existing projects and required before final approval when director-v2.json exists.
+- Reorganized SKILL.md around content/sound, directing, footage/editing, actual review and selective rework; archived legacy procedures.
+- Archived real 24s sample as a failed quality benchmark, not a release-quality video.
+
+
 ## [3.0.0-dev.8] - 2026-11-07
 - Added original four-template B-roll information motion renderer with source provenance, actual MP4 output, and FFmpeg tests.
 - Added A-roll scene viewpoint labels and honest camera reframing; real first-person requires real POV evidence.

@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "topic": "手机通知为什么打断专注",
+  "baseline": "v3.0 24-second sample",
+  "baseline_rating": {
+    "overall": 3.5,
+    "scale": 10,
+    "assessment_source": "prior explicit qualitative review; not automated or independently measured"
+  },
+  "status": "KNOWN_FAILED_QUALITY_REFERENCE",
+  "duration_s": 24,
+  "shot_count": 8,
+  "observed_defects": [
+    {
+      "id": "OLD-01",
+      "issue_type": "mechanical_equal_duration",
+      "severity": "high",
+      "evidence": "Eight scenes follow a mechanically repeated 3-second edit cadence",
+      "proposed_fix": "Re-time cuts from observed speech emphasis and concrete changes in the scene"
+    },
+    {
+      "id": "OLD-02",
+      "issue_type": "narrative_redundancy",
+      "severity": "high",
+      "evidence": "Information graphics mostly paraphrase spoken points with generic cards",
+      "proposed_fix": "Replace text cards with real cause-effect footage, experiment or demonstration"
+    },
+    {
+      "id": "OLD-03",
+      "issue_type": "small_subject",
+      "severity": "high",
+      "evidence": "Person is displayed as a small illustration in a large card composition",
+      "proposed_fix": "Increase actor's narrative prominence and use actual character performance"
+    },
+    {
+      "id": "OLD-04",
+      "issue_type": "bad_narration",
+      "severity": "critical",
+      "evidence": "Offline Chinese eSpeak narration is robotic, with incomplete dictionary support",
+      "proposed_fix": "Use natural continuous narration and actual sentence-level alignment"
+    },
+    {
+      "id": "OLD-05",
+      "issue_type": "character_drift",
+      "severity": "medium",
+      "evidence": "Three actual GIF shots show differing characters; not one consistent narrator",
+      "proposed_fix": "Use same consistent lead character or clearly frame each as different independent example"
+    }
+  ],
+  "release_pass": false,
+  "quality_gate": "Do not auto-award a passing score from synthetic fixtures"
+}
