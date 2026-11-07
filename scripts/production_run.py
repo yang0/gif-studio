@@ -102,6 +102,8 @@ def run_stage(project,stage,allow_network=False,allow_models=False,
         if not p["visual_plan"].is_file() or not p["storyboard"].is_file():
             raise FileNotFoundError("Real visual plan and storyboard missing")
         timeline=read(p["audio_timeline"]); visual=read(p["visual_plan"])
+        from real_source_gate import require_media
+        require_media(root,visual)  # Stop before compiling/creating any fake preview.
         storyboard=read(p["storyboard"])
         plan_path=root/"video-plan.json"
         if plan_path.is_file():
@@ -189,7 +191,7 @@ def write_status(project,data):
 def main():
     p=argparse.ArgumentParser()
     p.add_argument("--project",required=True)
-    p.add_argument("--until",choices=STEPS+("director","mixed_preview"),default="sequence")
+    p.add_argument("--until",choices=STEPS+("director","mixed_preview"),default="mixed_preview")
     p.add_argument("--allow-network-tts",action="store_true")
     p.add_argument("--allow-alignment-model",action="store_true")
     p.add_argument("--voice",default="zh-CN-XiaoxiaoNeural")
