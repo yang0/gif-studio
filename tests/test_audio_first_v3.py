@@ -100,6 +100,24 @@ class AudioFirstContractTests(unittest.TestCase):
         self.assertEqual("ready",report["stages"][1]["status"])
         self.assertEqual("ready",report["stages"][2]["status"])
 
+    def test_non_gif_video_does_not_require_gif_account_or_candidate_pool(self):
+        init(self.root)
+        (self.root/"script.json").write_text(
+            json.dumps(self.script,ensure_ascii=False),encoding="utf-8")
+        (self.root/"audio-timeline.json").write_text(
+            json.dumps(self.timeline,ensure_ascii=False),encoding="utf-8")
+        plan=json.loads(json.dumps(self.plan))
+        plan["shots"][0]["media_type"]="screen_recording"
+        plan["shots"][1]["media_type"]="screenshot"
+        (self.root/"visual-plan.json").write_text(
+            json.dumps(plan,ensure_ascii=False),encoding="utf-8")
+        report=state(self.root)
+        stages={x["stage"]:x for x in report["stages"]}
+        self.assertEqual("ready",stages["asset_production"]["status"])
+        self.assertEqual("ready",stages["asset_library"]["status"])
+        self.assertEqual("missing",stages["edit_sequence"]["status"])
+        self.assertFalse(report["ready_for_publication"])
+
     def test_project_paths_reject_escape(self):
         with self.assertRaises(ValueError):
             resolve(self.root,"../outside.wav")
