@@ -9,6 +9,8 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/"scripts"))
 from audio_subtitles import build,generate,stamp
 from audio_timeline import sha256
+from visual_plan import sha256_json
+from release_sequence import v3_subtitle_provenance_issues
 
 class AudioSubtitleTests(unittest.TestCase):
     def setUp(self):
@@ -56,6 +58,18 @@ class AudioSubtitleTests(unittest.TestCase):
         output.write_text("foreign subtitles",encoding="utf-8")
         with self.assertRaises(FileExistsError):
             generate(self.root,self.script_path,self.timeline_path,self.audio,output)
+
+    def test_v3_formal_release_rejects_stale_caption_provenance(self):
+        output=self.root/"subtitles"/"captions.srt"
+        generate(self.root,self.script_path,self.timeline_path,self.audio,output)
+        sequence={
+            "audio_timeline_sha256":sha256_json(self.timeline),
+            "audio_sha256":sha256(self.audio)}
+        self.assertEqual([],v3_subtitle_provenance_issues(
+            self.root,sequence,self.audio,output))
+        output.write_text("Modified captions",encoding="utf-8")
+        issues=v3_subtitle_provenance_issues(self.root,sequence,self.audio,output)
+        self.assertTrue(any("srt_sha256" in x for x in issues),issues)
 
     def test_timestamp_format(self):
         self.assertEqual("01:02:03,004",stamp(3723004))
