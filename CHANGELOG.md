@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.0-dev.3] - 2026-11-07
+- Added `gif_batch.py` for concurrent real executable GIF backend calls with explicit literal prompts and source image attachment metadata.
+- Batch jobs use bounded retry/timeout, content-addressed request checks, serialized in-process candidate ingestion and per-candidate resume state.
+- Reject invalid native GIFs, altered prompts, mismatched reference-image SHA declarations, missing backend capabilities and fake response metadata.
+- Added end-to-end subprocess protocol fixture tests and Windows-friendly `--backend-file` configuration; requires a *real* external GIF generation backend.
+- Synthetic test GIFs only exercise protocol; never represent qualified GPT footage.
+
 ## [3.0.0-dev.2] - 2026-11-07
 - Added real optional `edge-tts` whole-narration synthesis with actual WAV output, immutable audio metadata and no fabricated timestamps.
 - Added optional `stable-ts` forced alignment from locked paragraph text to real audio; fails closed on drift/missing segments.

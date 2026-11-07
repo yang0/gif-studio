@@ -26,6 +26,8 @@ description: Codex-first multi-style GIF video production skill. 将知识口播
 
 每个视觉片段选好真实 GPT GIF 候选后，运行 `scripts/visual_to_sequence.py --project project --script project/script.json --audio project/audio/voiceover.wav --timeline project/audio-timeline.json --visual-plan project/visual-plan.json --storyboard project/storyboard.json`。它会以毫秒时间码直接生成已有 `sequence.json v2` 格式的**未审核**帧级镜头计划，禁止按字数猜镜头秒数；若真实 GIF 无法覆盖所需时间，必须准备更多素材，而不是自动冻结。随后仍按旧版候选审核、预览和正式交付门禁执行。
 
+v3 候选批量生成入口：`python3 scripts/gif_batch.py --project project --tasks project/gif-batch.json --backend-file backend-command.json --workers 2`。后端必须是运行环境内**真实可用且明确支持完整提示词/参考图**的本地可执行程序；阅读 `references/gif-generator-runtime.md`。调度器支持并发与断点重试，但不会自己创造模型调用能力；没有后端时必须停止，并告知用户。每条输出只是未审候选，必须在素材库独立检查语义、动态和角色一致性。
+
 A-roll 多镜头需要真实参考包：三视图（正/侧/背）、笔触局部和场景图。使用 `reference_pack.py` 核对实际图像哈希和分辨率。Codex GIF 生成接口必须遵循 `generator_adapter.py` 的准备/入库协议：显式记录每条完整 prompt、参考包、真实工具调用/回执、生成 GIF，并让候选进独立素材库。**工具回执只是来源记录，不代表自动认证，也不能绕过视觉审核。** 不要声称此 Python 脚本本身会生成 GIF。
 
 v3 现已增加可选真实 Provider：`scripts/voice_production.py` 使用 edge-tts **整段合成** WAV（需要网络与可选依赖），`scripts/forced_align.py` 使用 stable-ts 将定稿全文与真实音轨做强制对齐（依赖本地模型和可用运行环境，必须审核实际对齐质量）。`scripts/production_run.py --project project --until sequence` 可将已有音频、对齐、视觉编排及真实候选素材接入可恢复同步工作流；若需在线 TTS，必须加 `--allow-network-tts`；若需运行/下载对齐模型，必须加 `--allow-alignment-model`。失败不得跳过或冒充完成。完整 GPT GIF 工具调用调度、混合 B-roll 渲染及真实高质量样片仍属于 Issue #1 后续工作；已提供从已审时间码与真实 GPT GIF 候选生成草稿 EDL 的工具；不能宣称 v3 已全部交付。

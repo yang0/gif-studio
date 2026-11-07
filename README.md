@@ -16,6 +16,7 @@
 - `scripts/project_flow.py`：统一项目清单和阶段 `init/status/plan/validate`，是只读诊断/依赖检查，而不是生成器。
 - `scripts/reference_pack.py`：校验角色三视图、笔触和场景的真实参考图 SHA256。
 - `scripts/generator_adapter.py`：为真实 Codex GIF 生成准备完整提示词/参考包请求，并将实际输出与工具来源登记入候选池；不会自行发起虚构的 GPT API 请求。
+- `scripts/gif_batch.py`：对接真实本地 GIF 后端执行程序，最多四条候选并发、超时与有限重试、失败状态和哈希绑定的断点恢复；生成能力由实际可用的外部后端提供。
 - `scripts/visual_to_sequence.py`：把绑定真实音轨的毫秒级视觉计划编译成现有 `sequence.json` 自由剪辑草案，要求真实素材覆盖时长。
 - `scripts/audio_subtitles.py`：直接使用真实声学时间码生成句级字幕和来源报告；v3 正式发布检查其音轨/时间码/字幕哈希是否一致。
 - `scripts/voice_production.py`：可选 `edge-tts` 整段配音，输出真实 WAV 与来源报告，不能冒充音频时间码。
@@ -62,6 +63,16 @@ python3 scripts/production_run.py --project project --until sequence
 可以先将已有音频放在 `project/audio/voiceover.wav`，直接运行 `--until alignment`。现有音频/对齐文件符合 SHA 和时间码规则就**校验后复用**；错误或过期的结果不会被静默覆盖。网络 TTS 与本地大型对齐模型都必须显式开启。不应在用户没有真实配音环境时拿测试用静音轨代替口播。
 
 这仍是“音频 → 已有视觉素材 → 剪辑草稿”的同步执行器；**不具备从主题全自动生成最终高质量视频的能力**，实际生成 GPT GIF 与整片视觉审阅仍需通过真实工具完成。
+
+### v3.0 · 多候选真实 GIF 调度
+
+先准备不同的逐镜提示词与可用的原始角色参考图，然后按 [GIF 生成后端协议](references/gif-generator-runtime.md) 配置已连接实际生成工具的可信后端。**本仓库不附带一个能凭空调用 Codex GIF 额度的命令**；工具不具备 GIF 生成功能时，调度器必须失败，而不是生成矢量动画或虚报成功。
+
+```bash
+python3 scripts/gif_batch.py --project project --tasks project/gif-batch.json --backend-file backend-command.json --workers 2 --timeout 180 --max-attempts 2
+```
+
+候选只被登记为 `unreviewed`，仍需要真实查看动画、单候选质量审核和导演选片。生成任务与项目正式发布审核彼此独立。
 
 ## 核心规则：GPT GIF ONLY
 
