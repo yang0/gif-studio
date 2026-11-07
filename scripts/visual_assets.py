@@ -188,6 +188,7 @@ def check(project):
     catalog=read_catalog(root)
     ready=0
     pending=[]
+    seen_bytes={}
     for job in jobs:
         path=inside(root,job["prompt"])
         key=job["shot_id"]+"/"+job["candidate_id"]
@@ -205,6 +206,9 @@ def check(project):
             or rec["prompt_sha256"]!=sha256(path)):
             problems.append(key+": candidate file or exact prompt differs from production job")
         else:
+            if rec["sha256"] in seen_bytes:
+                problems.append(key+": byte-identical GIF reused from "+seen_bytes[rec["sha256"]])
+            seen_bytes[rec["sha256"]]=key
             ready+=1
     return {"status":"blocked" if problems else ("produced_unreviewed" if not pending else "awaiting_generation"),
             "issues":problems,"produced_count":ready,

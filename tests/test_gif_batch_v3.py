@@ -33,6 +33,10 @@ if "wrong-hash" in payload["candidate_id"]:
                       "reference_pack_sha256":payload["reference_pack_sha256"]}))
     sys.exit(0)
 colors=["red","blue","green","yellow","purple","orange"]
+if payload["candidate_id"] in ("detail","fail","mechanism","take-b"):
+    colors=list(reversed(colors))
+elif payload["candidate_id"]=="same-output":
+    colors=colors
 frames=[Image.new("RGB",(270,480),color) for color in colors]
 path=work/"generated.gif"
 frames[0].save(path,format="GIF",save_all=True,append_images=frames[1:],
@@ -113,6 +117,18 @@ class BatchTests(unittest.TestCase):
         self.assertEqual(1,out["ingested"],out)
         status=json.loads((self.project/"production"/"batch"/"shot-01"/"wide.json").read_text())
         self.assertEqual(sha256(pack),status["reference_sha256"])
+
+    def test_generator_cannot_register_same_gif_as_second_candidate(self):
+        # Backend emits the same GIF bytes for 'wide' and 'same-output'.
+        tasks={"version":1,"tasks":[self.tasks["tasks"][0],
+             {"shot_id":"shot-01","candidate_id":"same-output",
+              "prompt":"prompts/b.txt","notes":"Independent take must not recycle wide"}]}
+        out=run(self.project,tasks,self.command,workers=1)
+        self.assertEqual(1,out["ingested"],out)
+        rejected=next(x for x in out["results"] if x["key"]=="shot-01/same-output")
+        self.assertEqual("blocked",rejected["status"])
+        self.assertIn("byte-identical",rejected["error"])
+        self.assertEqual(1,len(read(self.project)["candidates"]))
 
     def test_invalid_manifest_rejected(self):
         task=self.tasks["tasks"][0]

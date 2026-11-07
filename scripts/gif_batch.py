@@ -197,6 +197,14 @@ def execute_one(project, entry, command, caps, timeout, max_attempts):
             receipt_path=work/"receipt.json"
             atomic_json(receipt_path,receipt)
             with INGEST_LOCK:
+                # Different requested candidates MUST NOT silently reuse the
+                # same output bytes. This catches generators stuck on one GIF.
+                produced_sha=sha256(file)
+                repeated=[other for other,meta in read_catalog(root)["candidates"].items()
+                          if other!=key and meta.get("sha256")==produced_sha]
+                if repeated:
+                    raise ValueError("Generator returned byte-identical GIF to existing candidate(s): "+
+                                     ", ".join(repeated)+". Stop/replan instead of recycling footage")
                 registered=ingest(root,shot,take,file,receipt_path,entry["notes"])
             outcome={"key":key,"status":"ingested_unreviewed",
                      "attempts":attempt,"input_sha256":input_hash,
